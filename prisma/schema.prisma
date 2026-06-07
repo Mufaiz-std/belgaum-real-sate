@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl= env("DIRECT_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  GUEST
+  USER
+  SUBSCRIBER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  VILLA
+  PLOT
+  COMMERCIAL
+  AGRICULTURAL
+}
+
+enum FurnishedStatus {
+  UNFURNISHED
+  SEMI_FURNISHED
+  FURNISHED
+}
+
+enum PropertyStatus {
+  PENDING
+  ACTIVE
+  SOLD
+  EXPIRED
+  REJECTED
+}
+
+enum PlanType {
+  BASIC
+  PREMIUM
+  GOLD
+  SINGLE
+}
+
+enum SubStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  SINGLE_PROPERTY
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum NotifStatus {
+  UNREAD
+  READ
+}
+
+// ─── MODELS ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String     @id @default(cuid())
+  phone     String     @unique
+  name      String?
+  email     String?    @unique
+  role      Role       @default(USER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  properties    Property[]
+  subscriptions Subscription[]
+  unlocks       PropertyUnlock[]
+  payments      Payment[]
+  dailyUsage    DailyUsage[]
+  leadsAsBuyer  Lead[]         @relation("BuyerLeads")
+  leadsAsOwner  Lead[]         @relation("OwnerLeads")
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@index([phone])
+  @@index([role])
+}
+
+model Property {
+  id           String           @id @default(cuid())
+  ownerId      String
+  title        String
+  slug         String           @unique
+  description  String           @db.Text
+  propertyType PropertyType
+  price        Float
+  priceMin     Float
+  priceMax     Float
+  areaSqft     Float?
+  bedrooms     Int?
+  bathrooms    Int?
+  balconies    Int?
+  parking      Int?
+  floor        Int?
+  totalFloors  Int?
+  propertyAge  String?
+  furnished    FurnishedStatus?
+  latitude     Float?
+  longitude    Float?
+  address      String?          @db.Text
+  city         String           @default("Belagavi")
+  area         String
+  status       PropertyStatus   @default(PENDING)
+  isFeatured   Boolean          @default(false)
+  viewCount    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  owner     User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images    PropertyImage[]
+  amenities PropertyAmenity[]
+  unlocks   PropertyUnlock[]
+  payments  Payment[]
+  leads     Lead[]
+
+  @@index([area])
+  @@index([propertyType])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([ownerId])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  imageUrl   String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, sortOrder])
+}
+
+model PropertyAmenity {
+  id         String @id @default(cuid())
+  propertyId String
+  name       String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, name])
+}
+
+model Subscription {
+  id         String    @id @default(cuid())
+  userId     String
+  planType   PlanType
+  amount     Float
+  startDate  DateTime  @default(now())
+  expiryDate DateTime
+  status     SubStatus @default(ACTIVE)
+  dailyLimit Int       @default(15)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([expiryDate])
+}
+
+model PropertyUnlock {
+  id         String   @id @default(cuid())
+  propertyId String
+  userId     String
+  paymentId  String   @unique
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  propertyId    String?
+  transactionId String        @unique
+  orderId       String        @unique
+  amount        Float
+  paymentType   PaymentType
+  status        PaymentStatus @default(PENDING)
+  planType      PlanType?
+  invoiceUrl    String?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DailyUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @db.Date
+  viewsUsed Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  propertyId String
+  buyerId    String
+  ownerId    String
+  message    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  buyer    User     @relation("BuyerLeads", fields: [buyerId], references: [id], onDelete: Cascade)
+  owner    User     @relation("OwnerLeads", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([buyerId])
+}
+
+model Notification {
+  id        String      @id @default(cuid())
+  userId    String
+  title     String
+  body      String      @db.Text
+  status    NotifStatus @default(UNREAD)
+  link      String?
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  metadata  Json?
+  ipAddress String?
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
