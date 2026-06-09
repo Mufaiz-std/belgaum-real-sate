@@ -30,8 +30,8 @@ export default async function AdminLayout({
           adminPhone={user.phone}
           pendingCount={pendingCount}
         />
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl p-6 lg:p-8">{children}</div>
+        <main className="flex-1 overflow-y-auto pt-14 lg:pt-0">
+          <div className="mx-auto max-w-7xl p-4 lg:p-8">{children}</div>
         </main>
       </div>
     )

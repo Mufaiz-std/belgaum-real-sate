@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Check, Minus, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { PLAN_AMOUNTS, PLAN_DETAILS, type PlanKey } from '@/lib/pricing'
+import { type PlanKey } from '@/lib/pricing'
 import { formatDate, formatIndianPrice } from '@/lib/format'
 import { apiFetch } from '@/lib/api-client'
 import { toast } from 'sonner'
@@ -13,13 +13,13 @@ import { cn } from '@/lib/utils'
 
 const PLANS: PlanKey[] = ['BASIC', 'PREMIUM', 'GOLD']
 
-const FEATURE_ROWS = [
+const FEATURE_ROWS: { key: string; label: string }[] = [
   { key: 'contactAccess', label: 'Contact Access' },
   { key: 'uploadProperties', label: 'Upload Properties' },
-  { key: 'dailyViews', label: '15 Views/Day' },
+  { key: 'dailyViews', label: 'Views/Day' },
   { key: 'prioritySupport', label: 'Priority Support' },
   { key: 'featuredListings', label: 'Featured Listings' },
-] as const
+]
 
 const FAQ_ITEMS = [
   {
@@ -42,9 +42,10 @@ const FAQ_ITEMS = [
 
 interface PricingPlansProps {
   isLoggedIn: boolean
-  currentPlan: PlanKey | null
+  currentPlan: string | null
   subscriptionExpiry: Date | null
   tokensRemaining: number
+  dbPlans: any[]
 }
 
 export function PricingPlans({
@@ -52,12 +53,13 @@ export function PricingPlans({
   currentPlan,
   subscriptionExpiry,
   tokensRemaining,
+  dbPlans,
 }: PricingPlansProps) {
   const router = useRouter()
-  const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null)
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
-  const handleSubscribe = async (plan: PlanKey) => {
+  const handleSubscribe = async (plan: string) => {
     if (!isLoggedIn) {
       router.push(`/login?redirect=/pricing`)
       return
@@ -70,12 +72,15 @@ export function PricingPlans({
     setLoadingPlan(null)
   }
 
-  const getCta = (plan: PlanKey) => {
+  const getCta = (plan: string) => {
     if (!isLoggedIn) return { label: 'Get Started', disabled: false }
     if (currentPlan === plan) return { label: 'Current Plan', disabled: true }
     if (currentPlan) return { label: 'Upgrade Plan', disabled: false }
     return { label: 'Subscribe Now', disabled: false }
   }
+
+  const regularPlans = dbPlans.filter(p => p.planKey !== 'SINGLE')
+  const singlePlan = dbPlans.find(p => p.planKey === 'SINGLE')
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
@@ -107,14 +112,13 @@ export function PricingPlans({
       )}
 
       <div className="mb-16 grid gap-6 md:grid-cols-3">
-        {PLANS.map((plan, index) => {
-          const details = PLAN_DETAILS[plan]
-          const isPremium = plan === 'PREMIUM'
-          const cta = getCta(plan)
+        {regularPlans.map((plan, index) => {
+          const isPremium = plan.planKey === 'PREMIUM'
+          const cta = getCta(plan.planKey)
 
           return (
             <motion.div
-              key={plan}
+              key={plan.id}
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -126,9 +130,9 @@ export function PricingPlans({
                   : 'border border-cream-dark bg-white hover:border-gold hover:shadow-lg'
               )}
             >
-              {details.badge && (
+              {plan.badge && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold px-3 py-1 font-mono text-xs font-bold text-dark">
-                  {details.badge}
+                  {plan.badge}
                 </span>
               )}
 
@@ -138,7 +142,7 @@ export function PricingPlans({
                   isPremium ? 'text-gold' : 'text-neutral'
                 )}
               >
-                {details.name}
+                {plan.name}
               </span>
               <p
                 className={cn(
@@ -146,10 +150,10 @@ export function PricingPlans({
                   isPremium ? 'text-cream' : 'text-dark'
                 )}
               >
-                {details.duration}
+                {plan.duration}
               </p>
               <p className="mt-4 font-mono text-5xl font-bold text-gold">
-                {formatIndianPrice(PLAN_AMOUNTS[plan])}
+                {formatIndianPrice(plan.price)}
               </p>
               <p
                 className={cn(
@@ -162,8 +166,10 @@ export function PricingPlans({
 
               <ul className="mt-8 flex-1 space-y-3">
                 {FEATURE_ROWS.map((feature) => {
-                  const enabled =
-                    details.features[feature.key as keyof typeof details.features]
+                  let enabled = plan.features[feature.key as keyof typeof plan.features]
+                  let label = feature.label
+                  if (feature.key === 'dailyViews') label = `${plan.dailyLimit} Views/Day`
+
                   return (
                     <li key={feature.key} className="flex items-center gap-2">
                       {enabled ? (
@@ -188,7 +194,7 @@ export function PricingPlans({
                               : 'text-neutral'
                         )}
                       >
-                        {feature.label}
+                        {label}
                       </span>
                     </li>
                   )
@@ -197,8 +203,8 @@ export function PricingPlans({
 
               <button
                 type="button"
-                disabled={cta.disabled || loadingPlan === plan}
-                onClick={() => handleSubscribe(plan)}
+                disabled={cta.disabled || loadingPlan === plan.planKey}
+                onClick={() => handleSubscribe(plan.planKey)}
                 className={cn(
                   'mt-8 w-full rounded-lg py-3.5 font-body font-semibold transition-colors',
                   cta.disabled
@@ -208,7 +214,7 @@ export function PricingPlans({
                       : 'bg-gold text-dark hover:bg-gold-light'
                 )}
               >
-                {loadingPlan === plan ? (
+                {loadingPlan === plan.planKey ? (
                   <Loader2 className="mx-auto size-5 animate-spin" />
                 ) : (
                   cta.label
@@ -224,10 +230,10 @@ export function PricingPlans({
           Just browsing? Access one property.
         </p>
         <div className="mx-auto max-w-2xl rounded-2xl border border-cream-dark bg-white p-8 shadow-sm">
-          <h3 className="font-mono text-sm uppercase text-gold">Single Property Access</h3>
+          <h3 className="font-mono text-sm uppercase text-gold">{singlePlan?.name || 'Single Property Access'}</h3>
           <p className="mt-2 font-body text-neutral">Unlock one listing, forever.</p>
           <p className="mt-4 font-mono text-4xl font-bold text-gold">
-            {formatIndianPrice(PLAN_AMOUNTS.SINGLE)}
+            {formatIndianPrice(singlePlan?.price || 500)}
           </p>
           <p className="font-body text-sm text-neutral">One-time · Lifetime access</p>
           <ul className="mt-6 space-y-2 font-body text-sm text-dark">
@@ -258,9 +264,9 @@ export function PricingPlans({
           <thead className="sticky top-0 bg-dark text-white">
             <tr>
               <th className="p-4 text-left font-body text-sm">Feature</th>
-              {PLANS.map((plan) => (
-                <th key={plan} className="p-4 text-center font-mono text-sm text-gold">
-                  {plan}
+              {regularPlans.map((plan) => (
+                <th key={plan.id} className="p-4 text-center font-mono text-sm text-gold">
+                  {plan.name}
                 </th>
               ))}
             </tr>
@@ -272,13 +278,10 @@ export function PricingPlans({
                 className={i % 2 === 0 ? 'bg-cream/50' : 'bg-white'}
               >
                 <td className="p-4 font-body text-sm text-dark">{feature.label}</td>
-                {PLANS.map((plan) => {
-                  const enabled =
-                    PLAN_DETAILS[plan].features[
-                      feature.key as keyof (typeof PLAN_DETAILS)[PlanKey]['features']
-                    ]
+                {regularPlans.map((plan) => {
+                  const enabled = plan.features[feature.key]
                   return (
-                    <td key={plan} className="p-4 text-center">
+                    <td key={plan.id} className="p-4 text-center">
                       {enabled ? (
                         <Check className="mx-auto size-5 text-gold" />
                       ) : (

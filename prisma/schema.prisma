@@ -23,14 +23,7 @@ enum UserStatus {
   BANNED
 }
 
-enum PropertyType {
-  HOUSE
-  APARTMENT
-  VILLA
-  PLOT
-  COMMERCIAL
-  AGRICULTURAL
-}
+
 
 enum FurnishedStatus {
   UNFURNISHED
@@ -46,12 +39,7 @@ enum PropertyStatus {
   REJECTED
 }
 
-enum PlanType {
-  BASIC
-  PREMIUM
-  GOLD
-  SINGLE
-}
+
 
 enum SubStatus {
   ACTIVE
@@ -77,6 +65,35 @@ enum NotifStatus {
 }
 
 // ─── MODELS ───────────────────────────────────────────────────────────────────
+
+model Area {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model PropertyTypeConfig {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model PlanConfig {
+  id           String   @id @default(cuid())
+  planKey      String   @unique
+  name         String
+  duration     String
+  durationDays Int
+  price        Float
+  dailyLimit   Int      @default(15)
+  badge        String?
+  features     Json
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
 
 model User {
   id        String     @id @default(cuid())
@@ -108,7 +125,7 @@ model Property {
   title        String
   slug         String           @unique
   description  String           @db.Text
-  propertyType PropertyType
+  propertyType String
   price        Float
   priceMin     Float
   priceMax     Float
@@ -171,7 +188,7 @@ model PropertyAmenity {
 model Subscription {
   id         String    @id @default(cuid())
   userId     String
-  planType   PlanType
+  planType   String
   amount     Float
   startDate  DateTime  @default(now())
   expiryDate DateTime
@@ -210,7 +227,7 @@ model Payment {
   amount        Float
   paymentType   PaymentType
   status        PaymentStatus @default(PENDING)
-  planType      PlanType?
+  planType      String?
   invoiceUrl    String?
   metadata      Json?
   createdAt     DateTime      @default(now())

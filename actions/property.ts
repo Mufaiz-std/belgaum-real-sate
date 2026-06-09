@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache'
 
 const propertyFormSchema = z.object({
   title: z.string().min(10).max(100),
-  propertyType: z.enum(['HOUSE', 'APARTMENT', 'VILLA', 'PLOT', 'COMMERCIAL', 'AGRICULTURAL']),
+  propertyType: z.string().min(1),
   transactionType: z.literal('SALE'),
   price: z.number().min(100000),
   area: z.string().min(1),
@@ -45,6 +45,10 @@ export async function submitProperty(formData: PropertyFormData) {
   const session = await requireAuth()
   const validated = propertyFormSchema.parse(formData)
 
+  // Admins bypass the approval queue — their properties go live immediately
+  const isAdmin = session.role === 'ADMIN'
+  const propertyStatus = isAdmin ? 'ACTIVE' : 'PENDING'
+
   const property = await prisma.property.create({
     data: {
       title: validated.title,
@@ -64,7 +68,7 @@ export async function submitProperty(formData: PropertyFormData) {
       furnished: validated.furnished,
       description: validated.description,
       ownerId: session.userId,
-      status: 'PENDING',
+      status: propertyStatus,
       slug: generateSlug(validated.title),
     },
   })
@@ -88,14 +92,16 @@ export async function submitProperty(formData: PropertyFormData) {
 
   await createAuditLog({
     userId: session.userId,
-    action: 'PROPERTY_SUBMITTED',
+    action: isAdmin ? 'PROPERTY_PUBLISHED' : 'PROPERTY_SUBMITTED',
     metadata: { propertyId: property.id, title: validated.title },
   })
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/properties')
+  revalidatePath('/admin')
+  revalidatePath('/properties') // public listing — instant for admin
 
-  return { success: true, propertyId: property.id }
+  return { success: true, propertyId: property.id, status: propertyStatus }
 }
 
 export async function deleteProperty(propertyId: string) {

@@ -25,6 +25,11 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
+    // Redirect admins away from the user dashboard to the admin panel
+    if (payload.role === 'ADMIN' && pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/admin', req.url))
+    }
+
     return NextResponse.next()
   } catch {
     return NextResponse.redirect(new URL('/login', req.url))

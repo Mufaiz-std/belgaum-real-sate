@@ -13,22 +13,30 @@ export async function getActiveSubscription(userId: string) {
 
 export async function createSubscription(
   userId: string,
-  planType: 'BASIC' | 'PREMIUM' | 'GOLD',
+  planType: string,
   _paymentId: string
 ) {
-  const durations: Record<string, number> = {
-    BASIC: 90,
-    PREMIUM: 180,
-    GOLD: 365,
+  const planConfig = await prisma.planConfig.findUnique({
+    where: { planKey: planType },
+  })
+
+  if (!planConfig) {
+    throw new Error('Invalid plan type')
   }
-  const amounts: Record<string, number> = {
-    BASIC: 3000,
-    PREMIUM: 4000,
-    GOLD: 6000,
+
+  // Parse duration text to days (e.g. "3 Months" -> ~90 days)
+  let durationDays = 30
+  const durationLower = planConfig.duration.toLowerCase()
+  if (durationLower.includes('month')) {
+    const num = parseInt(durationLower) || 1
+    durationDays = num * 30
+  } else if (durationLower.includes('year')) {
+    const num = parseInt(durationLower) || 1
+    durationDays = num * 365
   }
 
   const expiryDate = new Date()
-  expiryDate.setDate(expiryDate.getDate() + durations[planType])
+  expiryDate.setDate(expiryDate.getDate() + durationDays)
 
   await prisma.subscription.updateMany({
     where: { userId, status: 'ACTIVE' },
@@ -39,10 +47,10 @@ export async function createSubscription(
     data: {
       userId,
       planType: planType as PlanType,
-      amount: amounts[planType],
+      amount: planConfig.price,
       expiryDate,
       status: 'ACTIVE',
-      dailyLimit: 15,
+      dailyLimit: planConfig.dailyLimit,
     },
   })
 

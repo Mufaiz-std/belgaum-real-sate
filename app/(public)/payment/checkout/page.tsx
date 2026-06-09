@@ -8,30 +8,30 @@ import { Header } from '@/components/layout/Header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import {
-  PLAN_AMOUNTS,
-  PLAN_DETAILS,
-  calculateGstBreakdown,
-  type PlanKey,
-} from '@/lib/pricing'
+import { calculateGstBreakdown } from '@/lib/pricing'
 import { formatIndianPrice, maskPhone } from '@/lib/format'
 import { apiFetch } from '@/lib/api-client'
 import { toast } from 'sonner'
+import { prisma } from '@/lib/prisma'
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000
 
-function CheckoutContent() {
+function CheckoutContent({ dbPlans }: { dbPlans: any[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const plan = searchParams.get('plan') as PlanKey | null
+  const plan = searchParams.get('plan')
   const propertyId = searchParams.get('propertyId')
   const type = searchParams.get('type')
 
   const isSingle = type === 'single' && !!propertyId
+  
+  const singlePlan = dbPlans.find(p => p.planKey === 'SINGLE')
+  const selectedPlan = dbPlans.find(p => p.planKey === plan)
+
   const amount = isSingle
-    ? PLAN_AMOUNTS.SINGLE
-    : plan
-      ? PLAN_AMOUNTS[plan]
+    ? (singlePlan?.price || 500)
+    : selectedPlan
+      ? selectedPlan.price
       : 0
 
   const [name, setName] = useState('')
@@ -82,16 +82,16 @@ function CheckoutContent() {
   }, [])
 
   const getOrderLabel = () => {
-    if (isSingle) return 'Single Property Access'
-    if (plan && PLAN_DETAILS[plan]) {
-      return `${PLAN_DETAILS[plan].name} ${PLAN_DETAILS[plan].duration} Plan`
+    if (isSingle) return singlePlan?.name || 'Single Property Access'
+    if (selectedPlan) {
+      return `${selectedPlan.name} ${selectedPlan.duration} Plan`
     }
     return 'Subscription'
   }
 
   const getDuration = () => {
     if (isSingle) return 'Lifetime'
-    if (plan && PLAN_DETAILS[plan]) return PLAN_DETAILS[plan].duration
+    if (selectedPlan) return selectedPlan.duration
     return '—'
   }
 
@@ -284,7 +284,11 @@ function CheckoutContent() {
   )
 }
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const dbPlans = await prisma.planConfig.findMany({
+    where: { isActive: true }
+  })
+
   return (
     <>
       <Header />
@@ -296,7 +300,7 @@ export default function CheckoutPage() {
             </div>
           }
         >
-          <CheckoutContent />
+          <CheckoutContent dbPlans={dbPlans} />
         </Suspense>
       </main>
     </>
