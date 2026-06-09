@@ -315,6 +315,35 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
                   <p className="text-sm text-error">{errors.fullAddress}</p>
                 )}
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contactNumber">Contact Number (Optional)</Label>
+                  <Input
+                    id="contactNumber"
+                    type="tel"
+                    placeholder="e.g. +91 9876543210"
+                    value={formData.contactNumber || ''}
+                    onChange={(e) => updateField('contactNumber', e.target.value)}
+                  />
+                  {errors.contactNumber && (
+                    <p className="text-sm text-error">{errors.contactNumber}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="whatsappNumber">WhatsApp Number (Optional)</Label>
+                  <Input
+                    id="whatsappNumber"
+                    type="tel"
+                    placeholder="e.g. +91 9876543210"
+                    value={formData.whatsappNumber || ''}
+                    onChange={(e) => updateField('whatsappNumber', e.target.value)}
+                  />
+                  {errors.whatsappNumber && (
+                    <p className="text-sm text-error">{errors.whatsappNumber}</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

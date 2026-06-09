@@ -7,6 +7,8 @@ export const step1Schema = z.object({
   price: z.number().min(100000, 'Minimum price ₹1,00,000'),
   area: z.string().min(1, 'Please select an area'),
   fullAddress: z.string().min(10, 'Please enter full address'),
+  contactNumber: z.string().optional(),
+  whatsappNumber: z.string().optional(),
 })
 
 export const step2Schema = z.object({
@@ -43,6 +45,8 @@ export const INITIAL_FORM_DATA: PropertyFormData = {
   price: 0,
   area: '',
   fullAddress: '',
+  contactNumber: '',
+  whatsappNumber: '',
   bedrooms: undefined,
   bathrooms: undefined,
   balconies: undefined,

@@ -1,16 +1,17 @@
 'use client'
 
-const CSRF_KEY = 'csrf-token'
+const CSRF_COOKIE = 'csrf-token'
 
-export function setCsrfToken(token: string) {
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem(CSRF_KEY, token)
-  }
-}
+// No-op: kept for backwards compatibility with useAuth.ts
+// The real token is now read directly from the csrf-token cookie set by the server
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setCsrfToken(_token: string) {}
 
-export function getCsrfToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return sessionStorage.getItem(CSRF_KEY)
+
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(new RegExp('(?:^|; )' + CSRF_COOKIE + '=([^;]*)'))
+  return match ? decodeURIComponent(match[1]) : null
 }
 
 export async function apiFetch(url: string, options: RequestInit = {}) {
@@ -21,5 +22,12 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     headers.set('Content-Type', 'application/json')
   }
 
-  return fetch(url, { ...options, headers })
+  const res = await fetch(url, { ...options, headers })
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body?.error ?? `Request failed: ${res.status}`)
+  }
+
+  return res
 }

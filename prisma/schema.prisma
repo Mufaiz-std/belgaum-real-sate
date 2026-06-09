@@ -143,6 +143,8 @@ model Property {
   address      String?          @db.Text
   city         String           @default("Belagavi")
   area         String
+  contactNumber  String?
+  whatsappNumber String?
   status       PropertyStatus   @default(PENDING)
   isFeatured   Boolean          @default(false)
   viewCount    Int              @default(0)
