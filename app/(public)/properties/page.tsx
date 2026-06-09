@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useCallback, useTransition } from 'react'
 import { motion } from 'framer-motion'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -8,10 +8,7 @@ import PropertyFilters from '@/components/properties/PropertyFilters'
 import PropertyGrid from '@/components/properties/PropertyGrid'
 import Pagination from '@/components/properties/Pagination'
 import EmptyState from '@/components/properties/EmptyState'
-import { mockProperties } from '@/lib/mock-data'
 import { Property } from '@/lib/types'
-
-const ITEMS_PER_PAGE = 12
 
 interface Filters {
   search: string
@@ -39,123 +36,75 @@ const defaultFilters: Filters = {
   propertyId: '',
 }
 
+const TYPE_MAP: Record<string, string> = {
+  Flat: 'APARTMENT',
+  House: 'HOUSE',
+  Plot: 'PLOT',
+  Bungalow: 'VILLA',
+  Commercial: 'COMMERCIAL',
+  Agricultural: 'AGRICULTURAL',
+}
+
+const SORT_MAP: Record<string, string> = {
+  newest: 'newest',
+  'price-low': 'price_asc',
+  'price-high': 'price_desc',
+  'area-high': 'newest', // fallback — API doesn't have area sort
+}
+
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
 export default function PropertiesPage() {
   const [filters, setFilters] = useState<Filters>(defaultFilters)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
+  const [properties, setProperties] = useState<Property[]>([])
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [, startTransition] = useTransition()
 
-  // TODO: Replace with API call to /api/properties with filter params
-  const filteredProperties = useMemo(() => {
-    let result = [...mockProperties]
-
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.area.toLowerCase().includes(searchLower) ||
-          p.city.toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Property type filter
-    if (filters.propertyType !== 'All Types') {
-      const typeMap: Record<string, Property['propertyType']> = {
-        Flat: 'APARTMENT',
-        House: 'HOUSE',
-        Plot: 'PLOT',
-        Bungalow: 'VILLA',
-        Commercial: 'COMMERCIAL',
-        Agricultural: 'AGRICULTURAL',
+  const fetchProperties = useCallback(async (f: Filters, sort: string, page: number) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (f.search) params.set('q', f.search)
+      if (f.propertyType !== 'All Types') params.set('type', TYPE_MAP[f.propertyType] ?? f.propertyType)
+      if (f.priceMin) params.set('priceMin', f.priceMin.replace(/\D/g, ''))
+      if (f.priceMax) params.set('priceMax', f.priceMax.replace(/\D/g, ''))
+      if (f.bedrooms !== 'All' && f.bedrooms !== 'N/A' && !f.bedrooms.includes('+')) {
+        params.set('bedrooms', f.bedrooms)
       }
-      result = result.filter((p) => p.propertyType === typeMap[filters.propertyType])
-    }
+      params.set('sort', SORT_MAP[sort] ?? 'newest')
+      params.set('page', String(page))
 
-    // Status filter
-    if (filters.status !== 'All Status') {
-      result = result.filter(
-        (p) => p.status === filters.status.toUpperCase()
-      )
+      const res = await fetch(`/api/properties?${params.toString()}`)
+      if (!res.ok) throw new Error('Failed to fetch properties')
+      const data = await res.json()
+      setProperties(data.properties ?? [])
+      setPagination(data.pagination ?? null)
+    } catch (err) {
+      console.error(err)
+      setProperties([])
+      setPagination(null)
+    } finally {
+      setLoading(false)
     }
+  }, [])
 
-    // Bedrooms filter
-    if (filters.bedrooms !== 'All') {
-      if (filters.bedrooms === 'N/A') {
-        result = result.filter((p) => p.bedrooms === null)
-      } else {
-        const beds = parseInt(filters.bedrooms)
-        if (filters.bedrooms === '5+ BHK') {
-          result = result.filter((p) => p.bedrooms && p.bedrooms >= 5)
-        } else {
-          result = result.filter((p) => p.bedrooms === beds)
-        }
-      }
-    }
-
-    // Bathrooms filter
-    if (filters.bathrooms !== 'All') {
-      if (filters.bathrooms === '4+') {
-        result = result.filter((p) => p.bathrooms && p.bathrooms >= 4)
-      } else {
-        const baths = parseInt(filters.bathrooms)
-        result = result.filter((p) => p.bathrooms === baths)
-      }
-    }
-
-    // Price range filter
-    if (filters.priceMin) {
-      const minPrice = parseInt(filters.priceMin.replace(/\D/g, ''))
-      if (!isNaN(minPrice)) {
-        result = result.filter((p) => p.priceMax >= minPrice)
-      }
-    }
-    if (filters.priceMax) {
-      const maxPrice = parseInt(filters.priceMax.replace(/\D/g, ''))
-      if (!isNaN(maxPrice)) {
-        result = result.filter((p) => p.priceMin <= maxPrice)
-      }
-    }
-
-    // Area range filter
-    if (filters.areaMin) {
-      const minArea = parseInt(filters.areaMin.replace(/\D/g, ''))
-      if (!isNaN(minArea)) {
-        result = result.filter((p) => p.areaSqft && p.areaSqft >= minArea)
-      }
-    }
-    if (filters.areaMax) {
-      const maxArea = parseInt(filters.areaMax.replace(/\D/g, ''))
-      if (!isNaN(maxArea)) {
-        result = result.filter((p) => p.areaSqft && p.areaSqft <= maxArea)
-      }
-    }
-
-    // Sorting
-    switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.priceMin - b.priceMin)
-        break
-      case 'price-high':
-        result.sort((a, b) => b.priceMax - a.priceMax)
-        break
-      case 'area-high':
-        result.sort((a, b) => (b.areaSqft || 0) - (a.areaSqft || 0))
-        break
-      default:
-        // newest - keep default order (assuming mock data is newest first)
-        break
-    }
-
-    return result
-  }, [filters, sortBy])
-
-  const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE)
-  const paginatedProperties = filteredProperties.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  // Fetch on mount and whenever filters/sort/page changes
+  useEffect(() => {
+    startTransition(() => {
+      fetchProperties(filters, sortBy, currentPage)
+    })
+  }, [filters, sortBy, currentPage, fetchProperties])
 
   const handleSearch = () => {
     setCurrentPage(1)
@@ -170,6 +119,14 @@ export default function PropertiesPage() {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort)
+    setCurrentPage(1)
+  }
+
+  const totalCount = pagination?.total ?? 0
+  const totalPages = pagination?.totalPages ?? 0
 
   return (
     <div className="min-h-screen bg-cream">
@@ -201,24 +158,37 @@ export default function PropertiesPage() {
             />
           </div>
 
-          {/* Results */}
-          {paginatedProperties.length > 0 ? (
+          {/* Loading skeleton */}
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse shadow-sm">
+                  <div className="h-52 bg-neutral/20" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-neutral/20 rounded w-3/4" />
+                    <div className="h-4 bg-neutral/20 rounded w-1/2" />
+                    <div className="h-4 bg-neutral/20 rounded w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : properties.length > 0 ? (
             <>
               <PropertyGrid
-                properties={paginatedProperties}
+                properties={properties}
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
-                totalCount={filteredProperties.length}
+                totalCount={totalCount}
                 sortBy={sortBy}
-                onSortChange={setSortBy}
+                onSortChange={handleSortChange}
               />
 
               {totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  totalItems={filteredProperties.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
+                  totalItems={totalCount}
+                  itemsPerPage={12}
                   onPageChange={handlePageChange}
                 />
               )}

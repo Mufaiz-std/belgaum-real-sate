@@ -1,31 +1,7 @@
-// import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
-// import { getAuth, type Auth } from 'firebase/auth'
-
-// const firebaseConfig = {
-//   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-//   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-//   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-//   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-//   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-//   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-// }
-
-// let app: FirebaseApp | undefined
-// let auth: Auth | undefined
-
-// export function getFirebaseAuth(): Auth {
-//   if (typeof window === 'undefined') {
-//     throw new Error('Firebase Auth is only available in the browser')
-//   }
-//   if (!auth) {
-//     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-//     auth = getAuth(app)
-//   }
-//   return auth
-// }
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
 import { getAuth, type Auth } from 'firebase/auth'
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from 'firebase/app-check'
+// CRITICAL: Ensure you are importing ReCaptchaV3Provider, NOT ReCaptchaEnterpriseProvider
+import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from 'firebase/app-check'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -51,19 +27,22 @@ export function getFirebaseAuth(): Auth {
 
     // --- INITIALIZE APP CHECK ---
     if (!appCheck) {
-      // Step A: Set the global debug flag flag before initializing App Check
       if (process.env.NODE_ENV === 'development') {
-        (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        // CHANGED: Read the hardcoded token string from your env instead of passing 'true'
+        (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN;
       }
 
-      appCheck = initializeAppCheck(app, {
-        // Replace with your actual reCAPTCHA Enterprise site key if using it, 
-        // or use ReCaptchaV3Provider depending on your Firebase configuration.
-        provider: new ReCaptchaEnterpriseProvider(
-          process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_KEY || '6LcSxBEtAAAAAKpsxXy964Vakf3hPCFBbVx6sVr9'
-        ),
-        isTokenAutoRefreshEnabled: true,
-      });
+      const v3SiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_V3_KEY;
+      
+      if (v3SiteKey) {
+        appCheck = initializeAppCheck(app, {
+          // CRITICAL: Constructing a standard ReCaptchaV3Provider instance
+          provider: new ReCaptchaV3Provider(v3SiteKey),
+          isTokenAutoRefreshEnabled: true,
+        });
+      } else {
+        console.warn("App Check failed: NEXT_PUBLIC_RECAPTCHA_V3_KEY environment variable is missing.");
+      }
     }
   }
 
