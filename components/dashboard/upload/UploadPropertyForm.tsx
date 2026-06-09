@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { BELAGAVI_AREAS, AMENITIES } from '@/lib/constants'
+import { AMENITIES } from '@/lib/constants'
 import {
   step1Schema,
   step2Schema,
@@ -54,7 +54,7 @@ const AMENITY_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 
 const DRAFT_KEY = 'property-draft'
 
-export function UploadPropertyForm() {
+export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -62,6 +62,19 @@ export function UploadPropertyForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [restored, setRestored] = useState(false)
+  
+  const [areas, setAreas] = useState<string[]>([])
+  const [propertyTypes, setPropertyTypes] = useState<string[]>([])
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.areas) setAreas(data.areas.map((a: any) => a.name))
+        if (data.propertyTypes) setPropertyTypes(data.propertyTypes.map((t: any) => t.name))
+      })
+      .catch(console.error)
+  }, [])
 
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY)
@@ -148,8 +161,8 @@ export function UploadPropertyForm() {
     try {
       await submitProperty(formData)
       localStorage.removeItem(DRAFT_KEY)
-      toast.success("Property submitted for approval! We'll review it within 24 hours.")
-      router.push('/dashboard/properties')
+      toast.success(isAdmin ? 'Property uploaded successfully!' : "Property submitted for approval! We'll review it within 24 hours.")
+      router.push(isAdmin ? '/admin/properties' : '/dashboard/properties')
       router.refresh()
     } catch {
       toast.error('Failed to submit property')
@@ -242,12 +255,12 @@ export function UploadPropertyForm() {
                       )
                     }
                   >
-                    <option value="HOUSE">House</option>
-                    <option value="APARTMENT">Apartment</option>
-                    <option value="VILLA">Villa</option>
-                    <option value="PLOT">Plot</option>
-                    <option value="COMMERCIAL">Commercial</option>
-                    <option value="AGRICULTURAL">Agricultural</option>
+                    <option value="">Select type</option>
+                    {propertyTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
                   </Select>
                 </div>
 
@@ -281,7 +294,7 @@ export function UploadPropertyForm() {
                   onChange={(e) => updateField('area', e.target.value)}
                 >
                   <option value="">Select area</option>
-                  {BELAGAVI_AREAS.map((area) => (
+                  {areas.map((area) => (
                     <option key={area} value={area}>
                       {area}
                     </option>
@@ -578,7 +591,7 @@ export function UploadPropertyForm() {
               {submitting ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : (
-                'Submit for Approval'
+                isAdmin ? 'Upload Property' : 'Submit for Approval'
               )}
             </Button>
           )}

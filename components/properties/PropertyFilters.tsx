@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, RotateCcw, ChevronDown } from 'lucide-react'
 
@@ -23,15 +23,6 @@ interface PropertyFiltersProps {
   onSearch: () => void
 }
 
-const propertyTypes = [
-  'All Types',
-  'Flat',
-  'House',
-  'Plot',
-  'Bungalow',
-  'Commercial',
-  'Agricultural',
-]
 
 const statusOptions = ['All Status', 'Active', 'Sold']
 
@@ -73,6 +64,19 @@ export function PropertyFilters({
   onFiltersChange,
   onSearch,
 }: PropertyFiltersProps) {
+  const [propertyTypes, setPropertyTypes] = useState<string[]>(['All Types'])
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.propertyTypes) {
+          setPropertyTypes(['All Types', ...data.propertyTypes.map((t: any) => t.name)])
+        }
+      })
+      .catch(console.error)
+  }, [])
+
   const updateFilter = (key: keyof Filters, value: string) => {
     onFiltersChange({ ...filters, [key]: value })
   }

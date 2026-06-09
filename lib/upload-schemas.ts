@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const step1Schema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters').max(100),
-  propertyType: z.enum(['HOUSE', 'APARTMENT', 'VILLA', 'PLOT', 'COMMERCIAL', 'AGRICULTURAL']),
+  propertyType: z.string().min(1, 'Please select property type'),
   transactionType: z.literal('SALE'),
   price: z.number().min(100000, 'Minimum price ₹1,00,000'),
   area: z.string().min(1, 'Please select an area'),

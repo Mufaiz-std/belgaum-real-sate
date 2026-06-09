@@ -8,6 +8,7 @@ __v0_jsx-dev-runtime.ts
 
 # Environment variables
 .env*.local
+.env
 firebase-admin-key.json
 
 # Common ignores
