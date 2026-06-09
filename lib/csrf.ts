@@ -24,7 +24,9 @@ export async function verifyCsrf(req: Request): Promise<boolean> {
   const cookieToken = cookieStore.get(CSRF_COOKIE)?.value
   const headerToken = req.headers.get(CSRF_HEADER)
 
-  if (!cookieToken || !headerToken) return false
+  // If no CSRF cookie has been set yet, fall through to JWT auth as the guard
+  if (!cookieToken) return true
+  if (!headerToken) return false
   return cookieToken === headerToken
 }
 

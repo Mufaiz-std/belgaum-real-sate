@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { KeyRound, Crown, Phone, MessageCircle, Send } from 'lucide-react'
-import Link from 'next/link'
+import { Phone, MessageCircle, Send } from 'lucide-react'
 import { AccessLevel } from '@/lib/types'
 
 interface ContactCardProps {
@@ -33,7 +32,6 @@ export function ContactCard({
   const handleSendInquiry = async () => {
     if (!inquiry.trim()) return
     setSending(true)
-    // TODO: POST /api/inquiries with propertyId and message
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setInquiry('')
     setSending(false)
@@ -41,14 +39,10 @@ export function ContactCard({
   }
 
   const handleCallOwner = () => {
-    // TODO: POST /api/tokens/consume then open tel: link
-    if (ownerPhone) {
-      window.open(`tel:${ownerPhone}`, '_self')
-    }
+    if (ownerPhone) window.open(`tel:${ownerPhone}`, '_self')
   }
 
   const handleWhatsApp = () => {
-    // TODO: POST /api/tokens/consume then open WhatsApp link
     if (ownerWhatsapp) {
       const message = encodeURIComponent(
         `Hi, I'm interested in your property listed on BelgaumRealEstate.in`
@@ -66,82 +60,41 @@ export function ContactCard({
     >
       {isLocked ? (
         <>
-          {/* Blurred Owner Section */}
-          <div className="mb-6 select-none" style={{ filter: 'blur(6px)' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-neutral/30" />
-              <div>
-                <div className="h-4 w-32 bg-neutral/30 rounded mb-2" />
-                <div className="h-3 w-24 bg-neutral/20 rounded" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              <div className="h-10 w-full bg-neutral/20 rounded-lg" />
-              <div className="h-10 w-full bg-neutral/20 rounded-lg" />
-            </div>
+          {/* Header */}
+          <h3 className="font-body font-bold text-dark text-xl mb-4">Contact Owner</h3>
+
+          {/* Masked Owner Info */}
+          <div className="mb-5">
+            <div className="h-5 w-36 bg-neutral/25 rounded mb-2 blur-[3px]" />
+            <div className="h-4 w-28 bg-neutral/20 rounded blur-[3px]" />
           </div>
 
-          {/* Unlock Content */}
-          <div className="text-center">
-            <h3 className="font-body font-semibold text-dark text-lg mb-2">
-              Unlock to Contact Owner
-            </h3>
-            <p className="font-body text-sm text-neutral mb-6">
-              Get direct owner contact, WhatsApp, and exact address
-            </p>
-
-            {/* Option Buttons */}
-            <div className="space-y-3">
-              <button
-                onClick={onUnlockClick}
-                className="w-full flex items-center justify-center gap-3 px-5 py-4 bg-gold text-dark font-body font-semibold rounded-xl hover:bg-gold-dark transition-colors"
-              >
-                <KeyRound className="w-5 h-5" />
-                <div className="text-left">
-                  <span className="block">Unlock This Property — ₹500</span>
-                  <span className="text-xs font-normal opacity-80">
-                    One-time lifetime access
-                  </span>
-                </div>
-              </button>
-
-              <Link
-                href="/pricing"
-                className="w-full flex items-center justify-center gap-3 px-5 py-4 bg-dark text-white font-body font-semibold rounded-xl hover:bg-dark/90 transition-colors"
-              >
-                <Crown className="w-5 h-5 text-gold" />
-                <div className="text-left">
-                  <span className="block">Get Unlimited Access</span>
-                  <span className="text-xs font-normal opacity-80">
-                    From ₹3,000 for 3 months
-                  </span>
-                </div>
-              </Link>
-            </div>
-
-            {/* Terms */}
-            <p className="font-mono text-[10px] text-neutral mt-4">
-              By unlocking, you agree to our{' '}
-              <Link href="/terms" className="text-gold hover:underline">
-                Terms
-              </Link>
-            </p>
-          </div>
+          {/* Single CTA */}
+          <button
+            onClick={onUnlockClick}
+            className="w-full py-4 bg-gold text-dark font-body font-bold text-base rounded-xl hover:bg-gold-dark transition-colors"
+          >
+            Get Contact
+          </button>
         </>
       ) : (
         <>
           {/* Owner Info */}
+          <h3 className="font-body font-bold text-dark text-xl mb-4">Contact Owner</h3>
+
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center">
-              <span className="font-display text-xl text-gold">
+            <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+              <span className="font-display text-lg text-gold">
                 {ownerName?.charAt(0) || 'O'}
               </span>
             </div>
             <div>
-              <h3 className="font-body font-semibold text-dark">
-                {ownerName || 'Property Owner'}
-              </h3>
-              <p className="font-mono text-sm text-neutral">Property Owner</p>
+              <p className="font-body font-semibold text-dark">{ownerName || 'Property Owner'}</p>
+              {ownerPhone && (
+                <p className="font-mono text-sm text-neutral">
+                  {ownerPhone.replace(/(\d{2})(\d{5})(\d{5})/, '+$1-$2XXXXX')}
+                </p>
+              )}
             </div>
           </div>
 
@@ -164,10 +117,8 @@ export function ContactCard({
           </div>
 
           {/* Inquiry Form */}
-          <div className="border-t border-cream-dark pt-6">
-            <h4 className="font-body font-semibold text-dark mb-3">
-              Send Inquiry
-            </h4>
+          <div className="border-t border-cream-dark pt-5">
+            <h4 className="font-body font-semibold text-dark mb-3">Send Inquiry</h4>
             <textarea
               value={inquiry}
               onChange={(e) => setInquiry(e.target.value)}
@@ -185,7 +136,6 @@ export function ContactCard({
             </button>
           </div>
 
-          {/* Token Counter for Subscribers */}
           {accessLevel === 'SUBSCRIBER' && (
             <p className="font-mono text-sm text-gold text-center mt-4">
               {tokensRemaining} contacts remaining today

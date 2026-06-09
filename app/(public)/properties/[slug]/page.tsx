@@ -64,8 +64,8 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     latitude: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.latitude : null,
     longitude: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.longitude : null,
     ownerName: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.owner.name || 'Owner') : null,
-    ownerPhone: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.owner.phone : null,
-    ownerWhatsapp: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.owner.phone : null,
+    ownerPhone: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.contactNumber || property.owner.phone) : null,
+    ownerWhatsapp: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.whatsappNumber || property.owner.phone) : null,
   }
 
   // Fetch related properties
