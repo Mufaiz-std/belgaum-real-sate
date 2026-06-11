@@ -75,6 +75,7 @@ export function HeroBanner() {
             className="object-cover"
             priority
             sizes="100vw"
+            unoptimized
           />
         </div>
         {/* Gradient Overlay */}
