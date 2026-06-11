@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Eye, Star, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Star, Trash2, X } from 'lucide-react'
 import { formatDate, formatIndianPrice } from '@/lib/format'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Input } from '@/components/ui/input'
@@ -43,8 +43,7 @@ export function AdminPropertiesTable({
   const [properties, setProperties] = useState(initial)
   const [selected, setSelected] = useState<string[]>([])
   const [searchVal, setSearchVal] = useState(search)
-  const [drawerId, setDrawerId] = useState<string | null>(null)
-  const [drawerData, setDrawerData] = useState<Record<string, unknown> | null>(null)
+  const [deleteModal, setDeleteModal] = useState<{ id: string, title: string } | null>(null)
 
   const updateTab = (tab: string) => {
     const params = new URLSearchParams()
@@ -64,15 +63,28 @@ export function AdminPropertiesTable({
         })
       } else if (action === 'delete') {
         await apiFetch(`/api/admin/properties/${id}`, { method: 'DELETE' })
-      } else if (action === 'sold' || action === 'feature') {
+      } else if (action === 'sold' || action === 'unsold' || action === 'feature') {
         await apiFetch(`/api/admin/properties/${id}`, {
           method: 'PATCH',
           body: JSON.stringify(
-            action === 'sold' ? { status: 'SOLD' } : { isFeatured: !extra?.isFeatured }
+            action === 'sold' 
+              ? { status: 'SOLD' } 
+              : action === 'unsold' 
+                ? { status: 'ACTIVE' } 
+                : { isFeatured: !extra?.isFeatured }
           ),
         })
       }
-      setProperties((p) => p.filter((x) => !['approve', 'reject', 'delete'].includes(action) || x.id !== id))
+      setProperties((p) => 
+        p.map((x) => {
+          if (x.id === id) {
+            if (action === 'sold') return { ...x, status: 'SOLD' }
+            if (action === 'unsold') return { ...x, status: 'ACTIVE' }
+            if (action === 'feature') return { ...x, isFeatured: !extra?.isFeatured }
+          }
+          return x
+        }).filter((x) => !['approve', 'reject', 'delete'].includes(action) || x.id !== id)
+      )
       toast.success('Updated')
       router.refresh()
     } catch {
@@ -80,12 +92,7 @@ export function AdminPropertiesTable({
     }
   }
 
-  const openDrawer = async (id: string) => {
-    setDrawerId(id)
-    const res = await apiFetch(`/api/admin/properties/${id}`)
-    const data = await res.json()
-    setDrawerData(data.property)
-  }
+  // Removed openDrawer function
 
   const toggleSelect = (id: string) => {
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
@@ -205,29 +212,71 @@ export function AdminPropertiesTable({
                     <div className="flex flex-wrap gap-2 text-xs">
                       {p.status === 'PENDING' && (
                         <>
-                          <button type="button" className="text-success" onClick={() => handleAction(p.id, 'approve')}>
+                          <button 
+                            type="button" 
+                            className="text-success hover:text-success/80 transition-colors" 
+                            onClick={() => handleAction(p.id, 'approve')}
+                            title="Approve Property"
+                          >
                             <CheckCircle className="size-4" />
                           </button>
-                          <button type="button" className="text-error" onClick={() => handleAction(p.id, 'reject')}>
+                          <button 
+                            type="button" 
+                            className="text-error hover:text-error/80 transition-colors" 
+                            onClick={() => handleAction(p.id, 'reject')}
+                            title="Reject Property"
+                          >
                             <XCircle className="size-4" />
                           </button>
                         </>
                       )}
-                      <button type="button" onClick={() => openDrawer(p.id)}>
+                      
+                      <Link 
+                        href={`/properties/${p.slug}`} 
+                        target="_blank"
+                        className="text-neutral hover:text-dark transition-colors"
+                        title="View Property"
+                      >
                         <Eye className="size-4" />
-                      </button>
+                      </Link>
+
                       {p.status === 'ACTIVE' && (
-                        <button type="button" onClick={() => handleAction(p.id, 'sold')}>
+                        <button 
+                          type="button" 
+                          className="font-medium text-success hover:text-success/80 transition-colors"
+                          onClick={() => handleAction(p.id, 'sold')}
+                          title="Mark as Sold"
+                        >
                           Sold
                         </button>
                       )}
+
+                      {p.status === 'SOLD' && (
+                        <button 
+                          type="button" 
+                          className="font-medium text-neutral hover:text-dark transition-colors"
+                          onClick={() => handleAction(p.id, 'unsold')}
+                          title="Mark as Unsold (Active)"
+                        >
+                          Unsold
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => handleAction(p.id, 'feature', { isFeatured: p.isFeatured })}
+                        title={p.isFeatured ? "Remove Featured" : "Mark as Featured"}
+                        className="transition-colors hover:opacity-80"
                       >
-                        <Star className={cn('size-4', p.isFeatured && 'fill-gold text-gold')} />
+                        <Star className={cn('size-4', p.isFeatured ? 'fill-gold text-gold' : 'text-neutral hover:text-gold')} />
                       </button>
-                      <button type="button" className="text-error" onClick={() => handleAction(p.id, 'delete')}>
+
+                      <button 
+                        type="button" 
+                        className="text-error hover:text-error/80 transition-colors" 
+                        onClick={() => setDeleteModal({ id: p.id, title: p.title })}
+                        title="Delete Property"
+                      >
                         <Trash2 className="size-4" />
                       </button>
                     </div>
@@ -240,32 +289,53 @@ export function AdminPropertiesTable({
       </div>
 
       <AnimatePresence>
-        {drawerId && drawerData && (
+        {deleteModal && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-dark/50"
+              className="fixed inset-0 z-40 bg-dark/50 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setDrawerId(null)}
+              onClick={() => setDeleteModal(null)}
             />
             <motion.div
-              className="fixed right-0 top-0 z-50 h-full w-full max-w-lg overflow-y-auto bg-white p-6 shadow-2xl"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, x: '-50%', y: '-50%' }}
+              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, scale: 0.95, x: '-50%', y: '-50%' }}
             >
-              <h2 className="font-headline text-xl">{(drawerData as { title: string }).title}</h2>
-              <pre className="mt-4 overflow-auto rounded bg-cream p-4 text-xs">
-                {JSON.stringify(drawerData, null, 2)}
-              </pre>
-              <Link
-                href={`/properties/${(drawerData as { slug: string }).slug}`}
-                target="_blank"
-                className="mt-4 block text-gold hover:underline"
-              >
-                Open public page
-              </Link>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-headline text-xl text-dark">Delete property?</h2>
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal(null)}
+                  className="rounded-full p-1 text-neutral hover:bg-cream hover:text-dark transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+              <p className="font-body text-neutral mb-8">
+                This will permanently delete "{deleteModal.title}". This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal(null)}
+                  className="rounded-lg bg-cream px-5 py-2.5 font-body font-medium text-dark hover:bg-cream-dark transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleAction(deleteModal.id, 'delete')
+                    setDeleteModal(null)
+                  }}
+                  className="rounded-lg bg-error/10 px-5 py-2.5 font-body font-medium text-error hover:bg-error/20 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </motion.div>
           </>
         )}
