@@ -28,7 +28,7 @@ export const step3Schema = z.object({
 })
 
 export const step4Schema = z.object({
-  images: z.array(z.string()).min(3, 'Upload at least 3 photos').max(10),
+  images: z.array(z.string()).min(0, 'Upload photos').max(10),
 })
 
 export const fullPropertySchema = step1Schema

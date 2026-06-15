@@ -55,13 +55,19 @@ function GridPropertyCard({
     >
       {/* Image Container */}
       <div className="relative h-60 overflow-hidden">
-        <Image
-          src={property.coverImage}
-          alt={property.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        {property.coverImage ? (
+          <Image
+            src={property.coverImage}
+            alt={property.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-cream flex items-center justify-center text-neutral font-mono text-sm">
+            No Image
+          </div>
+        )}
 
         {/* Badge */}
         {property.badge && (
@@ -158,13 +164,19 @@ function ListPropertyCard({
     >
       {/* Image Container */}
       <div className="relative w-full md:w-80 h-56 md:h-auto flex-shrink-0 overflow-hidden">
-        <Image
-          src={property.coverImage}
-          alt={property.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, 320px"
-        />
+        {property.coverImage ? (
+          <Image
+            src={property.coverImage}
+            alt={property.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 320px"
+          />
+        ) : (
+          <div className="w-full h-full bg-cream flex items-center justify-center text-neutral font-mono text-sm">
+            No Image
+          </div>
+        )}
 
         {/* Badge */}
         {property.badge && (

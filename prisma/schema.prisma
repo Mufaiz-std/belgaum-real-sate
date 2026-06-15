@@ -145,6 +145,13 @@ model Property {
   area         String
   contactNumber  String?
   whatsappNumber String?
+  dimensions     String?
+  legalStatus    String?
+  facingDirection String?
+  landmark       String?
+  listedDateRaw  String?
+  sellerType     String?
+  sellerName     String?
   status       PropertyStatus   @default(PENDING)
   isFeatured   Boolean          @default(false)
   viewCount    Int              @default(0)
