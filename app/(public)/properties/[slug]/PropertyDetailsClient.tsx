@@ -75,6 +75,7 @@ interface PropertyDetailsClientProps {
   relatedProperties: any[]
   accessLevel: AccessLevel
   isAdmin?: boolean
+  initialSaved?: boolean
 }
 
 export default function PropertyDetailsClient({
@@ -82,9 +83,11 @@ export default function PropertyDetailsClient({
   relatedProperties,
   accessLevel,
   isAdmin,
+  initialSaved = false,
 }: PropertyDetailsClientProps) {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(initialSaved)
+  const [isSaving, setIsSaving] = useState(false)
 
   const isLocked = accessLevel === 'GUEST' || accessLevel === 'REGISTERED'
 
@@ -98,6 +101,30 @@ export default function PropertyDetailsClient({
     } else {
       await navigator.clipboard.writeText(window.location.href)
       alert('Link copied to clipboard!')
+    }
+  }
+
+  const handleToggleSave = async () => {
+    if (isSaving) return
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/properties/${property.id}/save`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert('Please login to save properties.')
+          return
+        }
+        throw new Error('Failed to toggle save')
+      }
+      const data = await res.json()
+      setSaved(data.saved)
+    } catch (error) {
+      console.error(error)
+      alert('An error occurred while saving the property.')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -236,12 +263,13 @@ export default function PropertyDetailsClient({
                       <Share2 className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => setSaved(!saved)}
+                      onClick={handleToggleSave}
+                      disabled={isSaving}
                       className={`p-3 rounded-lg border transition-colors ${
                         saved
                           ? 'border-gold bg-gold/10 text-gold'
                           : 'border-cream-dark hover:border-gold hover:text-gold'
-                      }`}
+                      } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                       aria-label={saved ? 'Remove from saved' : 'Save property'}
                     >
                       <Bookmark className={`w-5 h-5 ${saved ? 'fill-gold' : ''}`} />

@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Home,
+  Bookmark,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { maskPhone } from '@/lib/format'
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/properties', label: 'My Properties', icon: Building2 },
   { href: '/dashboard/upload', label: 'Upload Property', icon: PlusCircle },
+  { href: '/dashboard/saved', label: 'Saved Properties', icon: Bookmark },
   { href: '/dashboard/subscription', label: 'Subscription', icon: Star },
   { href: '/dashboard/payments', label: 'Payment History', icon: CreditCard },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },

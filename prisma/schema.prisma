@@ -106,6 +106,7 @@ model User {
   updatedAt DateTime   @updatedAt
 
   properties    Property[]
+  savedProperties SavedProperty[]
   subscriptions Subscription[]
   unlocks       PropertyUnlock[]
   payments      Payment[]
@@ -165,6 +166,7 @@ model Property {
   unlocks   PropertyUnlock[]
   payments  Payment[]
   leads     Lead[]
+  savedBy   SavedProperty[]
 
   @@index([area])
   @@index([propertyType])
@@ -306,4 +308,18 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([timestamp])
+}
+
+model SavedProperty {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
 }

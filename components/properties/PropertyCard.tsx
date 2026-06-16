@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bed, Bath, Maximize2, Lock } from 'lucide-react'
+import { Bed, Bath, Maximize2 } from 'lucide-react'
 
 export interface Property {
   id: string
@@ -127,17 +127,13 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mt-4">
           <Link
             href={`/properties/${slug || id}`}
             className="flex-1 px-4 py-2.5 bg-cream text-dark font-body font-medium rounded-lg text-center hover:bg-cream-dark transition-colors duration-200"
           >
             View Details
           </Link>
-          <button className="flex items-center gap-2 px-4 py-2.5 border border-gold/30 text-neutral font-body text-sm rounded-lg hover:border-gold hover:text-gold transition-colors duration-200">
-            <Lock className="w-4 h-4" />
-            Unlock
-          </button>
         </div>
       </div>
     </motion.div>

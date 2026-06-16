@@ -22,6 +22,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
   const session = await getSession()
 
   let accessLevel: AccessLevel = 'GUEST'
+  let initialSaved = false
 
   if (session) {
     // Admins always see everything — no subscription needed
@@ -31,6 +32,17 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
       // Use the shared helper which checks subscription & per-property unlocks
       accessLevel = await getAccessLevel(session.userId, property.id)
     }
+
+    // Check if saved
+    const savedProperty = await prisma.savedProperty.findUnique({
+      where: {
+        userId_propertyId: {
+          userId: session.userId,
+          propertyId: property.id,
+        },
+      },
+    })
+    initialSaved = !!savedProperty
   }
 
   // Map Prisma model to PropertyDetails interface
@@ -99,6 +111,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
       relatedProperties={mappedRelated} 
       accessLevel={accessLevel} 
       isAdmin={session?.role === 'ADMIN'}
+      initialSaved={initialSaved}
     />
   )
 }
