@@ -13,9 +13,13 @@ import type { Property } from '@/components/properties/PropertyCard'
 
 interface HomePageProps {
   properties: Property[]
+  stats?: {
+    propertiesCount: number
+    areasCount: number
+  }
 }
 
-export default function HomePage({ properties }: HomePageProps) {
+export default function HomePage({ properties, stats }: HomePageProps) {
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   return (
@@ -26,7 +30,7 @@ export default function HomePage({ properties }: HomePageProps) {
         <CategoryTabs onCategoryChange={setSelectedCategory} />
         <FeaturedProperties categoryFilter={selectedCategory} properties={properties} />
         <HowItWorks />
-        <StatsBar />
+        <StatsBar stats={stats} />
         <CTABanner />
       </main>
       <Footer />

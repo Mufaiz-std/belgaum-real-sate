@@ -7,6 +7,7 @@ import { Bed, Bath, Maximize2, Lock } from 'lucide-react'
 
 export interface Property {
   id: string
+  slug?: string
   title: string
   area: string
   priceMin: number
@@ -41,7 +42,7 @@ function formatPrice(price: number): string {
 }
 
 export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
-  const { id, title, area, priceMin, priceMax, beds, baths, sqft, badge, image } =
+  const { id, slug, title, area, priceMin, priceMax, beds, baths, sqft, badge, image } =
     property
 
   return (
@@ -128,7 +129,7 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
         {/* Actions */}
         <div className="flex items-center gap-3">
           <Link
-            href={`/properties/${id}`}
+            href={`/properties/${slug || id}`}
             className="flex-1 px-4 py-2.5 bg-cream text-dark font-body font-medium rounded-lg text-center hover:bg-cream-dark transition-colors duration-200"
           >
             View Details

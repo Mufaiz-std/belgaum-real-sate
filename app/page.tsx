@@ -29,6 +29,7 @@ function mapPropertyToCard(dbProp: any) {
 
   return {
     id: dbProp.id,
+    slug: dbProp.slug,
     title: dbProp.title,
     area: dbProp.area,
     priceMin: dbProp.priceMin,
@@ -45,28 +46,39 @@ function mapPropertyToCard(dbProp: any) {
 export const revalidate = 0 // Disable cache for the homepage to always get fresh properties
 
 export default async function Page() {
-  const dbProperties = await prisma.property.findMany({
-    where: {
-      status: 'ACTIVE'
-    },
-    include: {
-      images: {
-        orderBy: { sortOrder: 'asc' },
-        take: 1
-      }
-    },
-    orderBy: [
-      { isFeatured: 'desc' }, // Featured properties come first
-      { createdAt: 'desc' }   // Then order by newest
-    ]
-  })
+  const [dbProperties, propertiesCount, areasCount] = await Promise.all([
+    prisma.property.findMany({
+      where: {
+        status: 'ACTIVE'
+      },
+      include: {
+        images: {
+          orderBy: { sortOrder: 'asc' },
+          take: 1
+        }
+      },
+      orderBy: [
+        { isFeatured: 'desc' }, // Featured properties come first
+        { createdAt: 'desc' }   // Then order by newest
+      ]
+    }),
+    prisma.property.count({
+      where: { status: 'ACTIVE' }
+    }),
+    prisma.area.count({
+      where: { isActive: true }
+    })
+  ])
 
   const properties = dbProperties.map(mapPropertyToCard)
 
   return (
     <>
       <LocalBusinessSchema />
-      <HomePage properties={properties} />
+      <HomePage 
+        properties={properties} 
+        stats={{ propertiesCount, areasCount }} 
+      />
     </>
   )
 }

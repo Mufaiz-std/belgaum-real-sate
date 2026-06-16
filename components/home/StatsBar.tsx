@@ -3,11 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 
-const stats = [
-  { value: 8500, suffix: '+', label: 'Happy Listings' },
-  { value: 48, suffix: '', label: 'Areas Covered' },
-  { value: 0, prefix: '₹', suffix: '', label: 'Brokerage Charged' },
-]
 
 function AnimatedCounter({
   value,
@@ -51,15 +46,21 @@ function AnimatedCounter({
   )
 }
 
-export function StatsBar() {
+export function StatsBar({ stats: dbStats }: { stats?: { propertiesCount: number, areasCount: number } }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  const displayStats = [
+    { value: dbStats?.propertiesCount || 8500, suffix: '+', label: 'Happy Listings' },
+    { value: dbStats?.areasCount || 48, suffix: '', label: 'Areas Covered' },
+    { value: 0, prefix: '₹', suffix: '', label: 'Brokerage Charged' },
+  ]
 
   return (
     <section ref={ref} className="bg-dark py-16 sm:py-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0 md:divide-x md:divide-gold/25">
-          {stats.map((stat, index) => (
+          {displayStats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
