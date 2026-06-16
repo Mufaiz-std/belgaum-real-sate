@@ -98,6 +98,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
       property={mappedProperty} 
       relatedProperties={mappedRelated} 
       accessLevel={accessLevel} 
+      isAdmin={session?.role === 'ADMIN'}
     />
   )
 }

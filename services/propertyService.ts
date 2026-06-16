@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/prisma'
-import { PropertyStatus, PropertyType, Prisma } from '@prisma/client'
+import { PropertyStatus, Prisma } from '@prisma/client'
+import Fuse from 'fuse.js'
 
 export interface PropertyFilters {
   area?: string
-  propertyType?: PropertyType
+  propertyType?: string
   priceMin?: number
   priceMax?: number
   bedrooms?: number
@@ -25,7 +26,7 @@ export function sanitizeProperty(
     title: string
     area: string
     city: string
-    propertyType: PropertyType
+    propertyType: string
     priceMin: number
     priceMax: number
     areaSqft: number | null
@@ -103,7 +104,7 @@ export async function getProperties(filters: PropertyFilters) {
   const limit = filters.limit ?? 12
   const skip = (page - 1) * limit
 
-  const where: Prisma.PropertyWhereInput = {
+  const whereWithoutSearch: Prisma.PropertyWhereInput = {
     status: filters.status ?? 'ACTIVE',
     ...(filters.area && { area: { contains: filters.area, mode: 'insensitive' } }),
     ...(filters.propertyType && { propertyType: filters.propertyType }),
@@ -111,13 +112,6 @@ export async function getProperties(filters: PropertyFilters) {
     ...(filters.priceMax && { priceMax: { lte: filters.priceMax } }),
     ...(filters.bedrooms && { bedrooms: filters.bedrooms }),
     ...(filters.isFeatured !== undefined && { isFeatured: filters.isFeatured }),
-    ...(filters.search && {
-      OR: [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { area: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
-      ],
-    }),
   }
 
   const orderBy: Prisma.PropertyOrderByWithRelationInput =
@@ -127,9 +121,45 @@ export async function getProperties(filters: PropertyFilters) {
         ? { priceMin: 'desc' }
         : { createdAt: 'desc' }
 
+  if (filters.search) {
+    // Fuzzy search path using fuse.js
+    const allMatchingProps = await prisma.property.findMany({
+      where: whereWithoutSearch,
+      orderBy,
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        amenities: true,
+        owner: { select: { name: true } },
+      },
+    })
+    
+    const fuse = new Fuse(allMatchingProps, {
+      keys: ['title', 'area', 'description', 'address', 'landmark'],
+      threshold: 0.3, // 0.0 is exact match, 1.0 is match anything
+      ignoreLocation: true,
+    })
+    
+    const fuzzyResults = fuse.search(filters.search).map(r => r.item)
+    const total = fuzzyResults.length
+    const paginatedProperties = fuzzyResults.slice(skip, skip + limit)
+    
+    return {
+      properties: paginatedProperties,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    }
+  }
+
+  // Normal database pagination path when no search query
   const [properties, total] = await Promise.all([
     prisma.property.findMany({
-      where,
+      where: whereWithoutSearch,
       orderBy,
       skip,
       take: limit,
@@ -139,7 +169,7 @@ export async function getProperties(filters: PropertyFilters) {
         owner: { select: { name: true } },
       },
     }),
-    prisma.property.count({ where }),
+    prisma.property.count({ where: whereWithoutSearch }),
   ])
 
   return {

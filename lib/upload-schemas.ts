@@ -1,14 +1,20 @@
 import { z } from 'zod'
 
-export const step1Schema = z.object({
+export const step1BaseSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters').max(100),
   propertyType: z.string().min(1, 'Please select property type'),
   transactionType: z.literal('SALE'),
-  price: z.number().min(100000, 'Minimum price ₹1,00,000'),
+  price: z.number().min(1, 'Price is required'),
+  isPricePerSqFt: z.boolean().optional(),
   area: z.string().min(1, 'Please select an area'),
   fullAddress: z.string().min(10, 'Please enter full address'),
   contactNumber: z.string().optional(),
   whatsappNumber: z.string().optional(),
+})
+
+export const step1Schema = step1BaseSchema.refine(data => data.isPricePerSqFt || data.price >= 100000, {
+  message: 'Minimum price ₹1,00,000',
+  path: ['price'],
 })
 
 export const step2Schema = z.object({
@@ -28,13 +34,17 @@ export const step3Schema = z.object({
 })
 
 export const step4Schema = z.object({
-  images: z.array(z.string()).min(0, 'Upload photos').max(10),
+  images: z.array(z.string()).min(0, 'Upload photos').max(5),
 })
 
-export const fullPropertySchema = step1Schema
+export const fullPropertySchema = step1BaseSchema
   .merge(step2Schema)
   .merge(step3Schema)
   .merge(step4Schema)
+  .refine(data => data.isPricePerSqFt || data.price >= 100000, {
+    message: 'Minimum price ₹1,00,000',
+    path: ['price'],
+  })
 
 export type PropertyFormData = z.infer<typeof fullPropertySchema>
 
@@ -43,6 +53,7 @@ export const INITIAL_FORM_DATA: PropertyFormData = {
   propertyType: 'HOUSE',
   transactionType: 'SALE',
   price: 0,
+  isPricePerSqFt: false,
   area: '',
   fullAddress: '',
   contactNumber: '',

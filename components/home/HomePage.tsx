@@ -9,8 +9,13 @@ import { FeaturedProperties } from '@/components/home/FeaturedProperties'
 import { HowItWorks } from '@/components/home/HowItWorks'
 import { StatsBar } from '@/components/home/StatsBar'
 import { CTABanner } from '@/components/home/CTABanner'
+import type { Property } from '@/components/properties/PropertyCard'
 
-export default function HomePage() {
+interface HomePageProps {
+  properties: Property[]
+}
+
+export default function HomePage({ properties }: HomePageProps) {
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   return (
@@ -19,7 +24,7 @@ export default function HomePage() {
       <main>
         <HeroBanner />
         <CategoryTabs onCategoryChange={setSelectedCategory} />
-        <FeaturedProperties categoryFilter={selectedCategory} />
+        <FeaturedProperties categoryFilter={selectedCategory} properties={properties} />
         <HowItWorks />
         <StatsBar />
         <CTABanner />

@@ -33,7 +33,7 @@ import {
 } from '@/lib/upload-schemas'
 import { formatIndianNumber, parseIndianNumber } from '@/lib/format'
 import { ImageUploadStep } from './ImageUploadStep'
-import { submitProperty } from '@/actions/property'
+import { submitProperty, updateProperty } from '@/actions/property'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -54,11 +54,21 @@ const AMENITY_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 
 const DRAFT_KEY = 'property-draft'
 
-export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
+export function UploadPropertyForm({
+  isAdmin = false,
+  isEditMode = false,
+  initialData,
+  propertyId,
+}: {
+  isAdmin?: boolean
+  isEditMode?: boolean
+  initialData?: PropertyFormData
+  propertyId?: string
+}) {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
-  const [formData, setFormData] = useState<PropertyFormData>(INITIAL_FORM_DATA)
+  const [formData, setFormData] = useState<PropertyFormData>(initialData || INITIAL_FORM_DATA)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [restored, setRestored] = useState(false)
@@ -77,6 +87,11 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
   }, [])
 
   useEffect(() => {
+    if (isEditMode) {
+      if (initialData) setFormData(initialData)
+      setRestored(true)
+      return
+    }
     const draft = localStorage.getItem(DRAFT_KEY)
     if (draft) {
       try {
@@ -86,12 +101,12 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
       }
     }
     setRestored(true)
-  }, [])
+  }, [isEditMode, initialData])
 
   useEffect(() => {
-    if (!restored) return
+    if (!restored || isEditMode) return
     localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
-  }, [formData, restored])
+  }, [formData, restored, isEditMode])
 
   const isPlotOrAgri =
     formData.propertyType === 'PLOT' || formData.propertyType === 'AGRICULTURAL'
@@ -159,13 +174,19 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
     if (!validateStep(3)) return
     setSubmitting(true)
     try {
-      await submitProperty(formData)
-      localStorage.removeItem(DRAFT_KEY)
-      toast.success(isAdmin ? 'Property uploaded successfully!' : "Property submitted for approval! We'll review it within 24 hours.")
-      router.push(isAdmin ? '/admin/properties' : '/dashboard/properties')
+      if (isEditMode && propertyId) {
+        await updateProperty(propertyId, formData)
+        toast.success('Property updated successfully!')
+        router.push(isAdmin ? '/admin/properties' : '/dashboard/properties')
+      } else {
+        await submitProperty(formData)
+        localStorage.removeItem(DRAFT_KEY)
+        toast.success(isAdmin ? 'Property uploaded successfully!' : "Property submitted for approval! We'll review it within 24 hours.")
+        router.push(isAdmin ? '/admin/properties' : '/dashboard/properties')
+      }
       router.refresh()
-    } catch {
-      toast.error('Failed to submit property')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to submit property')
     } finally {
       setSubmitting(false)
     }
@@ -271,7 +292,24 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price">Price (₹)</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="price">Price (₹)</Label>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox"
+                      id="isPricePerSqFt" 
+                      className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
+                      checked={formData.isPricePerSqFt || false}
+                      onChange={(e) => updateField('isPricePerSqFt', e.target.checked)}
+                    />
+                    <label
+                      htmlFor="isPricePerSqFt"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Price per sq.ft
+                    </label>
+                  </div>
+                </div>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-neutral">
                     ₹
@@ -620,7 +658,7 @@ export function UploadPropertyForm({ isAdmin = false }: { isAdmin?: boolean }) {
               {submitting ? (
                 <Loader2 className="size-5 animate-spin" />
               ) : (
-                isAdmin ? 'Upload Property' : 'Submit for Approval'
+                isEditMode ? 'Save Changes' : isAdmin ? 'Upload Property' : 'Submit for Approval'
               )}
             </Button>
           )}

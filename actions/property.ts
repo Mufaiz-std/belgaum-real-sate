@@ -3,6 +3,7 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit'
+import { geocodeAddress } from '@/lib/geocoding'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
@@ -10,7 +11,8 @@ const propertyFormSchema = z.object({
   title: z.string().min(10).max(100),
   propertyType: z.string().min(1),
   transactionType: z.literal('SALE'),
-  price: z.number().min(100000),
+  price: z.number().min(1),
+  isPricePerSqFt: z.boolean().optional(),
   area: z.string().min(1),
   fullAddress: z.string().min(10),
   contactNumber: z.string().optional(),
@@ -25,7 +27,7 @@ const propertyFormSchema = z.object({
   furnished: z.enum(['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']).optional(),
   description: z.string().min(50).max(500),
   amenities: z.array(z.string()).optional(),
-  images: z.array(z.string()).min(3).max(10),
+  images: z.array(z.string()).min(0).max(10),
 })
 
 export type PropertyFormData = z.infer<typeof propertyFormSchema>
@@ -51,6 +53,9 @@ export async function submitProperty(formData: PropertyFormData) {
   const isAdmin = session.role === 'ADMIN'
   const propertyStatus = isAdmin ? 'ACTIVE' : 'PENDING'
 
+  const addressToGeocode = validated.fullAddress || `${validated.area}, Belagavi`
+  const coords = await geocodeAddress(addressToGeocode)
+
   const property = await prisma.property.create({
     data: {
       title: validated.title,
@@ -58,8 +63,11 @@ export async function submitProperty(formData: PropertyFormData) {
       price: validated.price,
       priceMin: validated.price,
       priceMax: validated.price,
+      isPricePerSqFt: validated.isPricePerSqFt || false,
       area: validated.area,
       address: validated.fullAddress,
+      latitude: coords?.latitude,
+      longitude: coords?.longitude,
       contactNumber: validated.contactNumber,
       whatsappNumber: validated.whatsappNumber,
       bedrooms: validated.bedrooms,
@@ -136,4 +144,79 @@ export async function deleteProperties(propertyIds: string[]) {
   revalidatePath('/dashboard/properties')
 
   return { success: true }
+}
+
+export async function updateProperty(propertyId: string, formData: PropertyFormData) {
+  const session = await requireAuth()
+  if (session.role !== 'ADMIN') throw new Error('Unauthorized')
+
+  const validated = propertyFormSchema.parse(formData)
+
+  const addressToGeocode = validated.fullAddress || `${validated.area}, Belagavi`
+  const coords = await geocodeAddress(addressToGeocode)
+
+  const property = await prisma.property.update({
+    where: { id: propertyId },
+    data: {
+      title: validated.title,
+      propertyType: validated.propertyType,
+      price: validated.price,
+      priceMin: validated.price,
+      priceMax: validated.price,
+      isPricePerSqFt: validated.isPricePerSqFt || false,
+      area: validated.area,
+      address: validated.fullAddress,
+      latitude: coords?.latitude,
+      longitude: coords?.longitude,
+      contactNumber: validated.contactNumber,
+      whatsappNumber: validated.whatsappNumber,
+      bedrooms: validated.bedrooms,
+      bathrooms: validated.bathrooms,
+      balconies: validated.balconies,
+      parking: validated.parking,
+      floor: validated.floor,
+      totalFloors: validated.totalFloors,
+      propertyAge: validated.propertyAge,
+      furnished: validated.furnished,
+      description: validated.description,
+    },
+  })
+
+  // Wipe and recreate images
+  await prisma.propertyImage.deleteMany({ where: { propertyId } })
+  if (validated.images?.length > 0) {
+    await prisma.propertyImage.createMany({
+      data: validated.images.map((url, index) => ({
+        propertyId,
+        imageUrl: url,
+        sortOrder: index,
+      })),
+    })
+  }
+
+  // Wipe and recreate amenities
+  await prisma.propertyAmenity.deleteMany({ where: { propertyId } })
+  if (validated.amenities?.length) {
+    await prisma.propertyAmenity.createMany({
+      data: validated.amenities.map((name) => ({
+        propertyId,
+        name,
+      })),
+    })
+  }
+
+  await createAuditLog({
+    userId: session.userId,
+    action: 'PROPERTY_UPDATED',
+    metadata: { propertyId, title: validated.title },
+  })
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/properties')
+  revalidatePath('/admin')
+  revalidatePath('/admin/properties')
+  revalidatePath('/properties')
+  revalidatePath(`/properties/${property.slug}`)
+
+  return { success: true, propertyId }
 }

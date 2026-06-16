@@ -74,12 +74,14 @@ interface PropertyDetailsClientProps {
   property: PropertyDetails
   relatedProperties: any[]
   accessLevel: AccessLevel
+  isAdmin?: boolean
 }
 
 export default function PropertyDetailsClient({
   property,
   relatedProperties,
   accessLevel,
+  isAdmin,
 }: PropertyDetailsClientProps) {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -218,6 +220,14 @@ export default function PropertyDetailsClient({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <Link
+                        href={`/admin/properties/${property.id}/edit`}
+                        className="px-4 py-2 border border-gold text-gold font-body font-medium rounded-lg hover:bg-gold hover:text-dark transition-colors"
+                      >
+                        Edit Property
+                      </Link>
+                    )}
                     <button
                       onClick={handleShare}
                       className="p-3 rounded-lg border border-cream-dark hover:border-gold hover:text-gold transition-colors"
