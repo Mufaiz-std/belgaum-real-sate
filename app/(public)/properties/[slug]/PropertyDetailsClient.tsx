@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
   ChevronRight,
@@ -90,8 +91,44 @@ export default function PropertyDetailsClient({
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [saved, setSaved] = useState(initialSaved)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUnlocking, setIsUnlocking] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const isLocked = accessLevel === 'GUEST' || accessLevel === 'REGISTERED'
+  const isLocked = accessLevel === 'GUEST' || accessLevel === 'REGISTERED' || accessLevel === 'SUBSCRIBER_LOCKED'
+
+  const handleUnlockClick = async () => {
+    if (accessLevel === 'GUEST') {
+      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`)
+      return
+    }
+    
+    if (accessLevel === 'REGISTERED') {
+      setUpgradeModalOpen(true)
+      return
+    }
+
+    if (accessLevel === 'SUBSCRIBER_LOCKED') {
+      if (isUnlocking) return
+      setIsUnlocking(true)
+      try {
+        const res = await fetch(`/api/properties/${property.id}/unlock`, {
+          method: 'POST',
+        })
+        const data = await res.json()
+        if (data.success) {
+          router.refresh()
+        } else {
+          alert(data.error || 'Failed to unlock')
+        }
+      } catch (err) {
+        console.error(err)
+        alert('An error occurred while unlocking.')
+      } finally {
+        setIsUnlocking(false)
+      }
+    }
+  }
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -218,7 +255,8 @@ export default function PropertyDetailsClient({
                 images={property.images}
                 title={property.title}
                 accessLevel={accessLevel}
-                onUnlockClick={() => setUpgradeModalOpen(true)}
+                onUnlockClick={handleUnlockClick}
+                isUnlocking={isUnlocking}
               />
 
               {/* Property Info Header */}
@@ -397,7 +435,8 @@ export default function PropertyDetailsClient({
                 ownerWhatsapp={property.ownerWhatsapp}
                 propertyId={property.id}
                 isFree={property.isFree}
-                onUnlockClick={() => setUpgradeModalOpen(true)}
+                onUnlockClick={handleUnlockClick}
+                isUnlocking={isUnlocking}
               />
             </div>
           </div>

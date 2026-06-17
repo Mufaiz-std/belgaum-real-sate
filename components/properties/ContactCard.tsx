@@ -13,6 +13,7 @@ interface ContactCardProps {
   propertyId: string
   isFree?: boolean
   onUnlockClick: () => void
+  isUnlocking?: boolean
   tokensRemaining?: number
 }
 
@@ -24,12 +25,13 @@ export function ContactCard({
   propertyId,
   isFree,
   onUnlockClick,
+  isUnlocking = false,
   tokensRemaining = 14,
 }: ContactCardProps) {
   const [inquiry, setInquiry] = useState('')
   const [sending, setSending] = useState(false)
 
-  const isLocked = accessLevel === 'GUEST' || accessLevel === 'REGISTERED'
+  const isLocked = accessLevel === 'GUEST' || accessLevel === 'REGISTERED' || accessLevel === 'SUBSCRIBER_LOCKED'
 
   const handleSendInquiry = async () => {
     if (!inquiry.trim()) return
@@ -105,10 +107,13 @@ export function ContactCard({
           {/* Single CTA */}
           <button
             onClick={isFree ? handleUnlockFree : onUnlockClick}
-            disabled={sending}
-            className="w-full py-4 bg-gold text-dark font-body font-bold text-base rounded-xl hover:bg-gold-dark transition-colors disabled:opacity-50"
+            disabled={sending || isUnlocking}
+            className="w-full py-4 bg-gold text-dark font-body font-bold text-base rounded-xl hover:bg-gold-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {sending ? 'Unlocking...' : isFree ? 'Unlock Contact (Free)' : 'Get Contact'}
+            {isUnlocking ? (
+              <div className="w-5 h-5 border-2 border-dark/30 border-t-dark rounded-full animate-spin" />
+            ) : null}
+            {isUnlocking ? 'Unlocking...' : sending ? 'Unlocking...' : isFree ? 'Unlock Contact (Free)' : 'Get Contact'}
           </button>
         </>
       ) : (
@@ -170,11 +175,7 @@ export function ContactCard({
             </button>
           </div>
 
-          {accessLevel === 'SUBSCRIBER' && (
-            <p className="font-mono text-sm text-gold text-center mt-4">
-              {tokensRemaining} contacts remaining today
-            </p>
-          )}
+
         </>
       )}
     </motion.div>

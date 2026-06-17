@@ -40,4 +40,4 @@ export interface PropertyDetails extends Property {
 }
 
 // Access levels — check server-side in production
-export type AccessLevel = 'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER'
+export type AccessLevel = 'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER_LOCKED'

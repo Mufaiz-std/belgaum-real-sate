@@ -17,7 +17,7 @@ export interface PropertyFilters {
   sortBy?: 'newest' | 'price_asc' | 'price_desc'
 }
 
-type AccessLevel = 'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER'
+type AccessLevel = 'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER_LOCKED'
 
 export function sanitizeProperty(
   property: {
@@ -44,6 +44,9 @@ export function sanitizeProperty(
     address?: string | null
     latitude?: number | null
     longitude?: number | null
+    sellerName?: string | null
+    contactNumber?: string | null
+    whatsappNumber?: string | null
     createdAt: Date
     amenities: { name: string }[]
     images: { imageUrl: string; sortOrder: number }[]
@@ -84,15 +87,15 @@ export function sanitizeProperty(
         : imageList,
   }
 
-  if (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') {
+  if (accessLevel === 'UNLOCKED') {
     return {
       ...base,
       address: property.address,
       latitude: property.latitude,
       longitude: property.longitude,
-      ownerName: property.owner?.name,
-      ownerPhone: property.owner?.phone,
-      ownerWhatsapp: property.owner?.phone,
+      ownerName: property.sellerName || property.owner?.name,
+      ownerPhone: property.contactNumber || property.owner?.phone,
+      ownerWhatsapp: property.whatsappNumber || property.contactNumber || property.owner?.phone,
     }
   }
 

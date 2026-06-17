@@ -91,9 +91,9 @@ export async function POST(req: Request) {
         let additional = String(row['ADDITIONAL'] || '');
         const landmark = String(row['LANDMARK'] || '');
         const dateRaw = String(row['DATE'] || '');
-        const sellerType = String(row['Type'] || ''); // Note: "Type" vs "TYPE"
-        const sellerName = String(row['NAME'] || '');
-        const contact = String(row['Contact'] || '');
+        const sellerType = String(row['T'] || row['Type'] || ''); 
+        const sellerName = String(row['NAME'] || row['Name'] || '');
+        const contact = String(row['Contact num'] || row['Contact num '] || row['Contact Number'] || row['Contact'] || '');
 
         if (!additional && landmark) {
            additional = `Landmark: ${landmark}`;

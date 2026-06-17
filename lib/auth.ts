@@ -36,22 +36,24 @@ export async function requireAdmin(): Promise<SessionUser> {
 export async function getAccessLevel(
   userId: string | null,
   propertyId: string
-): Promise<'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER'> {
+): Promise<'GUEST' | 'REGISTERED' | 'UNLOCKED' | 'SUBSCRIBER_LOCKED'> {
   if (!userId) return 'GUEST'
 
-  const subscription = await prisma.subscription.findFirst({
-    where: {
-      userId,
-      status: 'ACTIVE',
-      expiryDate: { gt: new Date() },
-    },
-  })
-  if (subscription) return 'SUBSCRIBER'
+  const [subscription, unlock] = await Promise.all([
+    prisma.subscription.findFirst({
+      where: {
+        userId,
+        status: 'ACTIVE',
+        expiryDate: { gt: new Date() },
+      },
+    }),
+    prisma.propertyUnlock.findFirst({
+      where: { userId, propertyId },
+    })
+  ])
 
-  const unlock = await prisma.propertyUnlock.findFirst({
-    where: { userId, propertyId },
-  })
   if (unlock) return 'UNLOCKED'
+  if (subscription) return 'SUBSCRIBER_LOCKED'
 
   return 'REGISTERED'
 }

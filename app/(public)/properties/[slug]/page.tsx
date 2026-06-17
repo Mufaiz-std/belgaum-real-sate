@@ -72,12 +72,12 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     images: property.images.length > 0 ? property.images.map(img => img.imageUrl) : ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'],
     
     // Private details shown if unlocked
-    address: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.address : null,
-    latitude: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.latitude : null,
-    longitude: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? property.longitude : null,
-    ownerName: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.owner.name || 'Owner') : null,
-    ownerPhone: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.contactNumber || property.owner.phone) : null,
-    ownerWhatsapp: (accessLevel === 'UNLOCKED' || accessLevel === 'SUBSCRIBER') ? (property.whatsappNumber || property.owner.phone) : null,
+    address: (accessLevel === 'UNLOCKED') ? property.address : null,
+    latitude: (accessLevel === 'UNLOCKED') ? property.latitude : null,
+    longitude: (accessLevel === 'UNLOCKED') ? property.longitude : null,
+    ownerName: (accessLevel === 'UNLOCKED') ? (property.owner.name || 'Owner') : null,
+    ownerPhone: (accessLevel === 'UNLOCKED') ? (property.contactNumber || property.owner.phone) : null,
+    ownerWhatsapp: (accessLevel === 'UNLOCKED') ? (property.whatsappNumber || property.owner.phone) : null,
   }
 
   // Fetch related properties

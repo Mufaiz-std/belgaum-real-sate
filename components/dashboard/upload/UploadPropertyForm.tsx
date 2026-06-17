@@ -72,7 +72,7 @@ export function UploadPropertyForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [restored, setRestored] = useState(false)
-  
+
   const [areas, setAreas] = useState<string[]>([])
   const [propertyTypes, setPropertyTypes] = useState<string[]>([])
 
@@ -297,9 +297,9 @@ export function UploadPropertyForm({
                 <div className="flex items-center justify-between">
                   <Label htmlFor="price">Price (₹)</Label>
                   <div className="flex items-center space-x-2">
-                    <input 
+                    <input
                       type="checkbox"
-                      id="isPricePerSqFt" 
+                      id="isPricePerSqFt"
                       className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
                       checked={formData.isPricePerSqFt || false}
                       onChange={(e) => updateField('isPricePerSqFt', e.target.checked)}
@@ -325,11 +325,11 @@ export function UploadPropertyForm({
                   />
                 </div>
                 {errors.price && <p className="text-sm text-error">{errors.price}</p>}
-                
+
                 <div className="flex items-center space-x-2 pt-2 border-t border-cream-dark mt-4">
-                  <input 
+                  <input
                     type="checkbox"
-                    id="isNegotiable" 
+                    id="isNegotiable"
                     className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
                     checked={formData.isNegotiable || false}
                     onChange={(e) => updateField('isNegotiable', e.target.checked)}
@@ -341,7 +341,7 @@ export function UploadPropertyForm({
                     Price is Negotiable
                   </label>
                 </div>
-                <div className="flex items-center space-x-2 pt-2">
+                {/* <div className="flex items-center space-x-2 pt-2">
                   <input 
                     type="checkbox"
                     id="isFree" 
@@ -355,7 +355,7 @@ export function UploadPropertyForm({
                   >
                     Make this listing free to unlock (Optional)
                   </label>
-                </div>
+                </div> */}
               </div>
 
               <div className="space-y-2">

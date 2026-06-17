@@ -11,6 +11,7 @@ interface PropertyGalleryProps {
   title: string
   accessLevel: AccessLevel
   onUnlockClick: () => void
+  isUnlocking?: boolean
 }
 
 export function PropertyGallery({
@@ -18,6 +19,7 @@ export function PropertyGallery({
   title,
   accessLevel,
   onUnlockClick,
+  isUnlocking = false,
 }: PropertyGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -71,9 +73,13 @@ export function PropertyGallery({
                   setLightboxOpen(true)
                 }
               }}
-              className="absolute bottom-4 right-4 px-4 py-2 bg-dark/80 text-white font-mono text-sm rounded-lg hover:bg-dark transition-colors backdrop-blur-sm"
+              disabled={isUnlocking}
+              className="absolute bottom-4 right-4 px-4 py-2 bg-dark/80 text-white font-mono text-sm rounded-lg hover:bg-dark transition-colors backdrop-blur-sm flex items-center gap-2"
             >
-              View All {images.length} Photos
+              {isUnlocking ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : null}
+              {isUnlocking ? 'Unlocking...' : `View All ${images.length} Photos`}
             </button>
           )}
         </div>
