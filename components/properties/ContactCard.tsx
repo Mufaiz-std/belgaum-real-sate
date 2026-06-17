@@ -11,6 +11,7 @@ interface ContactCardProps {
   ownerPhone?: string | null
   ownerWhatsapp?: string | null
   propertyId: string
+  isFree?: boolean
   onUnlockClick: () => void
   tokensRemaining?: number
 }
@@ -21,6 +22,7 @@ export function ContactCard({
   ownerPhone,
   ownerWhatsapp,
   propertyId,
+  isFree,
   onUnlockClick,
   tokensRemaining = 14,
 }: ContactCardProps) {
@@ -32,10 +34,41 @@ export function ContactCard({
   const handleSendInquiry = async () => {
     if (!inquiry.trim()) return
     setSending(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setInquiry('')
-    setSending(false)
-    alert('Inquiry sent successfully!')
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId, message: inquiry }),
+      })
+      if (!res.ok) {
+        if (res.status === 401) alert('Please login to send an inquiry.')
+        else throw new Error('Failed to send inquiry')
+        return
+      }
+      setInquiry('')
+      alert('Inquiry sent successfully!')
+    } catch (error) {
+      console.error(error)
+      alert('Failed to send inquiry.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleUnlockFree = async () => {
+    try {
+      setSending(true)
+      const res = await fetch(`/api/properties/${propertyId}/unlock`, { method: 'POST' })
+      if (!res.ok) {
+        if (res.status === 401) alert('Please login to unlock contact.')
+        throw new Error('Failed to unlock free')
+      }
+      window.location.reload()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setSending(false)
+    }
   }
 
   const handleCallOwner = () => {
@@ -71,10 +104,11 @@ export function ContactCard({
 
           {/* Single CTA */}
           <button
-            onClick={onUnlockClick}
-            className="w-full py-4 bg-gold text-dark font-body font-bold text-base rounded-xl hover:bg-gold-dark transition-colors"
+            onClick={isFree ? handleUnlockFree : onUnlockClick}
+            disabled={sending}
+            className="w-full py-4 bg-gold text-dark font-body font-bold text-base rounded-xl hover:bg-gold-dark transition-colors disabled:opacity-50"
           >
-            Get Contact
+            {sending ? 'Unlocking...' : isFree ? 'Unlock Contact (Free)' : 'Get Contact'}
           </button>
         </>
       ) : (

@@ -18,6 +18,7 @@ export interface Property {
   type: string
   badge?: 'FEATURED' | 'NEW' | 'HOT' | 'SOLD'
   image: string
+  isNegotiable?: boolean
 }
 
 interface PropertyCardProps {
@@ -42,7 +43,7 @@ function formatPrice(price: number): string {
 }
 
 export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
-  const { id, slug, title, area, priceMin, priceMax, beds, baths, sqft, badge, image } =
+  const { id, slug, title, area, priceMin, priceMax, beds, baths, sqft, badge, image, isNegotiable } =
     property
 
   return (
@@ -120,9 +121,16 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
 
         {/* Price */}
         <div className="mb-4">
-          <p className="font-mono text-xs text-neutral mb-1">Price Range</p>
+          <p className="font-mono text-xs text-neutral mb-1">
+            {priceMin === priceMax ? 'Price' : 'Price Range'}
+          </p>
           <p className="font-body font-bold text-gold text-xl">
-            {formatPrice(priceMin)} – {formatPrice(priceMax)}
+            {priceMin === priceMax 
+              ? formatPrice(priceMin) 
+              : `${formatPrice(priceMin)} – ${formatPrice(priceMax)}`}
+            {isNegotiable && (
+              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
+            )}
           </p>
         </div>
 

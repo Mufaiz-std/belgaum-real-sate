@@ -17,6 +17,8 @@ export interface Property {
   isFeatured: boolean
   coverImage: string
   status: 'ACTIVE' | 'SOLD' | 'PENDING'
+  isNegotiable?: boolean
+  isFree?: boolean
 }
 
 export interface PropertyDetails extends Property {

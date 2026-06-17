@@ -36,14 +36,6 @@ const defaultFilters: Filters = {
   propertyId: '',
 }
 
-const TYPE_MAP: Record<string, string> = {
-  Flat: 'APARTMENT',
-  House: 'HOUSE',
-  Plot: 'PLOT',
-  Bungalow: 'VILLA',
-  Commercial: 'COMMERCIAL',
-  Agricultural: 'AGRICULTURAL',
-}
 
 const SORT_MAP: Record<string, string> = {
   newest: 'newest',
@@ -76,7 +68,7 @@ export default function PropertiesPage() {
     try {
       const params = new URLSearchParams()
       if (f.search) params.set('q', f.search)
-      if (f.propertyType !== 'All Types') params.set('type', TYPE_MAP[f.propertyType] ?? f.propertyType)
+      if (f.propertyType !== 'All Types') params.set('type', f.propertyType)
       if (f.priceMin) params.set('priceMin', f.priceMin.replace(/\D/g, ''))
       if (f.priceMax) params.set('priceMax', f.priceMax.replace(/\D/g, ''))
       if (f.bedrooms !== 'All' && f.bedrooms !== 'N/A' && !f.bedrooms.includes('+')) {

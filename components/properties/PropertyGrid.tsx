@@ -118,7 +118,12 @@ function GridPropertyCard({
         {/* Price */}
         <div className="mb-4">
           <p className="font-body font-bold text-gold text-xl">
-            {formatPrice(property.priceMin)} – {formatPrice(property.priceMax)}
+            {property.priceMin === property.priceMax
+              ? formatPrice(property.priceMin)
+              : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
+            {property.isNegotiable && (
+              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
+            )}
           </p>
         </div>
 
@@ -130,10 +135,12 @@ function GridPropertyCard({
           >
             View Details
           </Link>
-          <button className="flex items-center gap-2 px-4 py-2.5 border border-gold text-gold font-mono text-sm rounded-lg hover:bg-gold hover:text-dark transition-colors duration-200">
-            <Lock className="w-4 h-4" />
-            ₹500
-          </button>
+          {/* {!property.isFree && (
+            <button className="flex items-center gap-2 px-4 py-2.5 border border-gold text-gold font-mono text-sm rounded-lg hover:bg-gold hover:text-dark transition-colors duration-200">
+              <Lock className="w-4 h-4" />
+              ₹500
+            </button>
+          )} */}
         </div>
       </div>
     </motion.div>
@@ -233,7 +240,12 @@ function ListPropertyCard({
         <div className="flex items-center justify-between gap-4">
           {/* Price */}
           <p className="font-body font-bold text-gold text-xl">
-            {formatPrice(property.priceMin)} – {formatPrice(property.priceMax)}
+            {property.priceMin === property.priceMax
+              ? formatPrice(property.priceMin)
+              : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
+            {property.isNegotiable && (
+              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
+            )}
           </p>
 
           {/* Actions */}
@@ -244,10 +256,12 @@ function ListPropertyCard({
             >
               View Details
             </Link>
-            <button className="flex items-center gap-2 px-4 py-2.5 border border-gold text-gold font-mono text-sm rounded-lg hover:bg-gold hover:text-dark transition-colors duration-200">
-              <Lock className="w-4 h-4" />
-              Unlock ₹500
-            </button>
+            {!property.isFree && (
+              <button className="flex items-center gap-2 px-4 py-2.5 border border-gold text-gold font-mono text-sm rounded-lg hover:bg-gold hover:text-dark transition-colors duration-200">
+                <Lock className="w-4 h-4" />
+                Unlock ₹500
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -294,22 +308,20 @@ export function PropertyGrid({
           <div className="flex items-center border border-cream-dark rounded-lg overflow-hidden">
             <button
               onClick={() => onViewModeChange('grid')}
-              className={`p-2.5 transition-colors ${
-                viewMode === 'grid'
+              className={`p-2.5 transition-colors ${viewMode === 'grid'
                   ? 'bg-gold text-dark'
                   : 'bg-white text-neutral hover:text-dark'
-              }`}
+                }`}
               aria-label="Grid view"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => onViewModeChange('list')}
-              className={`p-2.5 transition-colors ${
-                viewMode === 'list'
+              className={`p-2.5 transition-colors ${viewMode === 'list'
                   ? 'bg-gold text-dark'
                   : 'bg-white text-neutral hover:text-dark'
-              }`}
+                }`}
               aria-label="List view"
             >
               <List className="w-4 h-4" />

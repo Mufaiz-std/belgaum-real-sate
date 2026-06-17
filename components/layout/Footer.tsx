@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Home, Phone, Mail, MapPin } from 'lucide-react'
 
@@ -8,14 +11,6 @@ const exploreLinks = [
   { href: '/contact', label: 'Contact' },
 ]
 
-const propertyTypes = [
-  { href: '/properties?type=flat', label: 'Flats' },
-  { href: '/properties?type=house', label: 'Houses' },
-  { href: '/properties?type=plot', label: 'Plots' },
-  { href: '/properties?type=bungalow', label: 'Bungalow' },
-  { href: '/properties?type=commercial', label: 'Commercial' },
-  { href: '/properties?type=agricultural', label: 'Agricultural' },
-]
 
 const legalLinks = [
   { href: '/privacy', label: 'Privacy Policy' },
@@ -25,6 +20,24 @@ const legalLinks = [
 ]
 
 export function Footer() {
+  const [propertyTypes, setPropertyTypes] = useState<{ href: string; label: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.propertyTypes) {
+          setPropertyTypes(
+            data.propertyTypes.map((t: any) => ({
+              href: `/properties?type=${t.name}`,
+              label: t.name
+            }))
+          )
+        }
+      })
+      .catch(console.error)
+  }, [])
+
   return (
     <footer className="bg-dark text-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

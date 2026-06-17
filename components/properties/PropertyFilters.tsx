@@ -71,7 +71,8 @@ export function PropertyFilters({
       .then(res => res.json())
       .then(data => {
         if (data.propertyTypes) {
-          setPropertyTypes(['All Types', ...data.propertyTypes.map((t: any) => t.name)])
+          const types = data.propertyTypes.map((t: any) => t.name)
+          setPropertyTypes(['All Types', ...types])
         }
       })
       .catch(console.error)

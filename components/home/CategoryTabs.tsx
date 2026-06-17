@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -14,15 +14,12 @@ import {
   ArrowRight,
 } from 'lucide-react'
 
-const categories = [
-  { id: 'all', label: 'All Properties', icon: Building2, count: '8,500+' },
-  { id: 'flat', label: 'Flats', icon: Building, count: '3,240+' },
-  { id: 'house', label: 'Houses', icon: Home, count: '1,850+' },
-  { id: 'plot', label: 'Plots', icon: LayoutGrid, count: '1,420+' },
-  { id: 'bungalow', label: 'Bungalow', icon: Castle, count: '680+' },
-  { id: 'commercial', label: 'Commercial', icon: Briefcase, count: '890+' },
-  { id: 'agricultural', label: 'Agricultural', icon: Tractor, count: '420+' },
-]
+interface Category {
+  id: string
+  label: string
+  icon: any
+  count: string
+}
 
 interface CategoryTabsProps {
   onCategoryChange?: (category: string) => void
@@ -30,6 +27,38 @@ interface CategoryTabsProps {
 
 export function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
+  const [categories, setCategories] = useState<Category[]>([
+    { id: 'all', label: 'All Properties', icon: Building2, count: 'Explore' }
+  ])
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.propertyTypes) {
+          const typeIconMap: Record<string, any> = {
+            FLAT: Building,
+            HOUSE: Home,
+            PLOT: LayoutGrid,
+            BUNGALOW: Castle,
+            COMMERCIAL: Briefcase,
+            VILLA: Castle,
+          }
+          const dynamicCategories = data.propertyTypes.map((t: any) => ({
+            id: t.name,
+            label: t.name,
+            icon: typeIconMap[t.name.toUpperCase()] || Building2,
+            count: 'Explore'
+          }))
+          
+          setCategories([
+            { id: 'all', label: 'All Properties', icon: Building2, count: 'Explore' },
+            ...dynamicCategories
+          ])
+        }
+      })
+      .catch(console.error)
+  }, [])
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId)
@@ -55,7 +84,7 @@ export function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
 
         {/* Tabs */}
         <div className="relative">
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 pb-4">
             {categories.map((category) => {
               const Icon = category.icon
               const isActive = activeCategory === category.id
@@ -64,7 +93,7 @@ export function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
                 <motion.button
                   key={category.id}
                   onClick={() => handleCategoryClick(category.id)}
-                  className={`relative flex flex-col items-center gap-2 px-6 py-4 rounded-xl transition-all duration-300 shrink-0 min-w-[120px] ${
+                  className={`relative flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:px-6 sm:py-4 rounded-xl transition-all duration-300 text-center ${
                     isActive
                       ? 'bg-dark text-white'
                       : 'bg-cream text-dark hover:bg-cream-dark'
@@ -73,15 +102,15 @@ export function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
                   whileTap={{ scale: 0.98 }}
                 >
                   <Icon
-                    className={`w-6 h-6 ${
+                    className={`w-5 h-5 sm:w-6 sm:h-6 ${
                       isActive ? 'text-gold' : 'text-neutral'
                     }`}
                   />
-                  <span className="font-body font-medium text-sm">
+                  <span className="font-body font-medium text-[10px] leading-tight sm:text-sm">
                     {category.label}
                   </span>
                   <span
-                    className={`font-mono text-xs ${
+                    className={`hidden sm:block font-mono text-xs ${
                       isActive ? 'text-cream/70' : 'text-neutral'
                     }`}
                   >

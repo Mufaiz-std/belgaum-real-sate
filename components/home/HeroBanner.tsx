@@ -1,31 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, ShieldCheck, MapPin, Phone } from 'lucide-react'
 import Image from 'next/image'
 
-const locations = [
-  'All Areas',
-  'Tilakwadi',
-  'Shahapur',
-  'Khanapur Road',
-  'Camp Area',
-  'Hindwadi',
-  'Vadgaon',
-  'Angol',
-  'Udyambag',
-  'Shivbasav Nagar',
-]
 
-const propertyTypes = [
-  'All Types',
-  'Flat',
-  'House',
-  'Plot',
-  'Bungalow',
-  'Commercial',
-  'Agricultural',
-]
 
 const statuses = ['For Sale', 'For Rent']
 
@@ -47,7 +27,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
+      ease: 'easeOut' as const,
     },
   },
 }
@@ -62,6 +42,23 @@ const wordVariants = {
 
 export function HeroBanner() {
   const headlineWords = ['Discover', 'Your', 'Extraordinary', 'Home']
+  const [propertyTypes, setPropertyTypes] = useState<string[]>(['All Types'])
+
+  const [locations, setLocations] = useState<string[]>(['All Areas'])
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.propertyTypes) {
+          setPropertyTypes(['All Types', ...data.propertyTypes.map((t: any) => t.name)])
+        }
+        if (data.areas) {
+          setLocations(['All Areas', ...data.areas.map((a: any) => a.name)])
+        }
+      })
+      .catch(console.error)
+  }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

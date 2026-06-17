@@ -61,6 +61,8 @@ const furnishedLabels: Record<string, string> = {
   FULLY_FURNISHED: 'Fully Furnished',
 }
 
+
+
 function formatPrice(price: number): string {
   if (price >= 10000000) {
     return `₹${(price / 10000000).toFixed(2)} Cr`
@@ -197,8 +199,7 @@ export default function PropertyDetailsClient({
             </Link>
             <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
             <Link href="/properties" className="hover:text-gold transition-colors">
-              {property.propertyType.charAt(0) +
-                property.propertyType.slice(1).toLowerCase()}
+              {property.propertyType}
             </Link>
             <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
             <span className="hover:text-gold transition-colors">
@@ -280,10 +281,15 @@ export default function PropertyDetailsClient({
                 {/* Price */}
                 <div className="mb-8">
                   <p className="font-mono text-xs text-neutral uppercase mb-1">
-                    Price Range
+                    {property.priceMin === property.priceMax ? 'Price' : 'Price Range'}
                   </p>
-                  <p className="font-mono text-3xl text-gold font-bold">
-                    {formatPrice(property.priceMin)} – {formatPrice(property.priceMax)}
+                  <p className="font-mono text-3xl text-gold font-bold flex items-baseline gap-3">
+                    {property.priceMin === property.priceMax 
+                      ? formatPrice(property.priceMin) 
+                      : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
+                    {property.isNegotiable && (
+                      <span className="text-lg font-body font-normal text-neutral">(Negotiable)</span>
+                    )}
                   </p>
                 </div>
 
@@ -390,6 +396,7 @@ export default function PropertyDetailsClient({
                 ownerPhone={property.ownerPhone}
                 ownerWhatsapp={property.ownerWhatsapp}
                 propertyId={property.id}
+                isFree={property.isFree}
                 onUnlockClick={() => setUpgradeModalOpen(true)}
               />
             </div>
@@ -421,6 +428,7 @@ export default function PropertyDetailsClient({
                     type: prop.propertyType,
                     badge: prop.badge,
                     image: prop.coverImage,
+                    isNegotiable: prop.isNegotiable,
                   }}
                   index={index}
                 />

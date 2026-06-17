@@ -156,6 +156,8 @@ model Property {
   status       PropertyStatus   @default(PENDING)
   isFeatured   Boolean          @default(false)
   isPricePerSqFt Boolean        @default(false)
+  isNegotiable   Boolean        @default(false)
+  isFree         Boolean        @default(false)
   viewCount    Int              @default(0)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
