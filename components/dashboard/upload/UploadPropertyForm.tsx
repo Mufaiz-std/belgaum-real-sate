@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { AMENITIES } from '@/lib/constants'
+import { AMENITIES, PLOT_AMENITIES } from '@/lib/constants'
 import {
   step1Schema,
   step2Schema,
@@ -110,8 +110,19 @@ export function UploadPropertyForm({
     localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
   }, [formData, restored, isEditMode])
 
-  const isPlotOrAgri =
-    formData.propertyType === 'PLOT' || formData.propertyType === 'AGRICULTURAL'
+  const pType = (formData.propertyType || '').toUpperCase()
+  const isResidentialBuilding = ['FLAT', 'APARTMENT', 'HOUSE', 'BUNGALOW', 'VILLA'].includes(pType)
+  const isCommercial = pType === 'COMMERCIAL'
+  const isPlotOrAgri = pType === 'PLOT' || pType === 'AGRICULTURAL'
+
+  const showBedrooms = isResidentialBuilding
+  const showBathrooms = isResidentialBuilding || isCommercial
+  const showBalconies = isResidentialBuilding
+  const showParking = isResidentialBuilding || isCommercial
+  const showFloor = pType === 'FLAT' || pType === 'APARTMENT' || isCommercial
+  const showTotalFloors = isResidentialBuilding || isCommercial
+  const showPropertyAge = isResidentialBuilding || isCommercial
+  const showFurnished = isResidentialBuilding || isCommercial
 
   const updateField = <K extends keyof PropertyFormData>(
     key: K,
@@ -159,13 +170,26 @@ export function UploadPropertyForm({
   const goNext = () => {
     if (!validateStep(step)) return
     setDirection(1)
-    setStep((s) => Math.min(s + 1, 3))
+    if (step === 0 && isPlotOrAgri) {
+      setStep(2)
+    } else {
+      setStep((s) => Math.min(s + 1, 3))
+    }
   }
 
   const goBack = () => {
     setDirection(-1)
-    setStep((s) => Math.max(s - 1, 0))
+    if (step === 2 && isPlotOrAgri) {
+      setStep(0)
+    } else {
+      setStep((s) => Math.max(s - 1, 0))
+    }
   }
+
+  const visibleSteps = STEPS.map((label, index) => ({ label, index })).filter(s => {
+    if (isPlotOrAgri && s.index === 1) return false
+    return true
+  })
 
   const saveDraft = () => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
@@ -208,9 +232,8 @@ export function UploadPropertyForm({
 
   return (
     <div className="space-y-8">
-      {/* Progress indicator */}
       <div className="flex items-center justify-between">
-        {STEPS.map((label, index) => (
+        {visibleSteps.map(({ label, index }, i) => (
           <div key={label} className="flex flex-1 items-center">
             <div className="flex flex-col items-center">
               <div
@@ -223,13 +246,13 @@ export function UploadPropertyForm({
                       : 'border-neutral/30 bg-white text-neutral'
                 )}
               >
-                {index < step ? <Check className="size-5" /> : index + 1}
+                {index < step ? <Check className="size-5" /> : i + 1}
               </div>
               <span className="mt-2 hidden text-center font-body text-xs text-neutral sm:block">
                 {label}
               </span>
             </div>
-            {index < STEPS.length - 1 && (
+            {i < visibleSteps.length - 1 && (
               <div
                 className={cn(
                   'mx-2 h-0.5 flex-1',
@@ -429,168 +452,176 @@ export function UploadPropertyForm({
               <h2 className="font-headline text-xl text-dark">Property Details</h2>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                {!isPlotOrAgri && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Bedrooms</Label>
-                      <Select
-                        value={formData.bedrooms?.toString() || ''}
-                        onChange={(e) =>
-                          updateField(
-                            'bedrooms',
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      >
-                        <option value="">Select</option>
-                        {[1, 2, 3, 4].map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                        <option value="5">5+</option>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Bathrooms</Label>
-                      <Select
-                        value={formData.bathrooms?.toString() || ''}
-                        onChange={(e) =>
-                          updateField(
-                            'bathrooms',
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      >
-                        <option value="">Select</option>
-                        {[1, 2, 3].map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                        <option value="4">4+</option>
-                      </Select>
-                    </div>
-                  </>
+                {showBedrooms && (
+                  <div className="space-y-2">
+                    <Label>Bedrooms</Label>
+                    <Select
+                      value={formData.bedrooms?.toString() || ''}
+                      onChange={(e) =>
+                        updateField(
+                          'bedrooms',
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      {[1, 2, 3, 4].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                      <option value="5">5+</option>
+                    </Select>
+                  </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label>Balconies</Label>
-                  <Select
-                    value={formData.balconies?.toString() ?? ''}
-                    onChange={(e) =>
-                      updateField(
-                        'balconies',
-                        e.target.value !== '' ? Number(e.target.value) : undefined
-                      )
-                    }
-                  >
-                    <option value="">Select</option>
-                    {[0, 1, 2].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                    <option value="3">3+</option>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Parking</Label>
-                  <Select
-                    value={formData.parking?.toString() ?? ''}
-                    onChange={(e) =>
-                      updateField(
-                        'parking',
-                        e.target.value !== '' ? Number(e.target.value) : undefined
-                      )
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="0">None</option>
-                    {[1, 2].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                    <option value="3">3+</option>
-                  </Select>
-                </div>
-
-                {!isPlotOrAgri && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="floor">Floor</Label>
-                      <Input
-                        id="floor"
-                        type="number"
-                        min={0}
-                        value={formData.floor ?? ''}
-                        onChange={(e) =>
-                          updateField(
-                            'floor',
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="totalFloors">Total Floors</Label>
-                      <Input
-                        id="totalFloors"
-                        type="number"
-                        min={1}
-                        value={formData.totalFloors ?? ''}
-                        onChange={(e) =>
-                          updateField(
-                            'totalFloors',
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      />
-                    </div>
-                  </>
+                {showBathrooms && (
+                  <div className="space-y-2">
+                    <Label>Bathrooms</Label>
+                    <Select
+                      value={formData.bathrooms?.toString() || ''}
+                      onChange={(e) =>
+                        updateField(
+                          'bathrooms',
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      {[1, 2, 3].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                      <option value="4">4+</option>
+                    </Select>
+                  </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label>Property Age</Label>
-                  <Select
-                    value={formData.propertyAge || ''}
-                    onChange={(e) =>
-                      updateField(
-                        'propertyAge',
-                        (e.target.value || undefined) as PropertyFormData['propertyAge']
-                      )
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="NEW">New</option>
-                    <option value="1-5">1-5 Yrs</option>
-                    <option value="5-10">5-10 Yrs</option>
-                    <option value="10-20">10-20 Yrs</option>
-                    <option value="20+">20+ Yrs</option>
-                  </Select>
-                </div>
+                {showBalconies && (
+                  <div className="space-y-2">
+                    <Label>Balconies</Label>
+                    <Select
+                      value={formData.balconies?.toString() ?? ''}
+                      onChange={(e) =>
+                        updateField(
+                          'balconies',
+                          e.target.value !== '' ? Number(e.target.value) : undefined
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      {[0, 1, 2].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                      <option value="3">3+</option>
+                    </Select>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label>Furnished Status</Label>
-                  <Select
-                    value={formData.furnished || ''}
-                    onChange={(e) =>
-                      updateField(
-                        'furnished',
-                        (e.target.value || undefined) as PropertyFormData['furnished']
-                      )
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="UNFURNISHED">Unfurnished</option>
-                    <option value="SEMI_FURNISHED">Semi-furnished</option>
-                    <option value="FURNISHED">Furnished</option>
-                  </Select>
-                </div>
+                {showParking && (
+                  <div className="space-y-2">
+                    <Label>Parking</Label>
+                    <Select
+                      value={formData.parking?.toString() ?? ''}
+                      onChange={(e) =>
+                        updateField(
+                          'parking',
+                          e.target.value !== '' ? Number(e.target.value) : undefined
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="0">None</option>
+                      {[1, 2].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                      <option value="3">3+</option>
+                    </Select>
+                  </div>
+                )}
+
+                {showFloor && (
+                  <div className="space-y-2">
+                    <Label htmlFor="floor">Floor Number</Label>
+                    <Input
+                      id="floor"
+                      type="number"
+                      min={-1}
+                      value={formData.floor ?? ''}
+                      onChange={(e) =>
+                        updateField(
+                          'floor',
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </div>
+                )}
+
+                {showTotalFloors && (
+                  <div className="space-y-2">
+                    <Label htmlFor="totalFloors">Total Floors</Label>
+                    <Input
+                      id="totalFloors"
+                      type="number"
+                      min={1}
+                      value={formData.totalFloors ?? ''}
+                      onChange={(e) =>
+                        updateField(
+                          'totalFloors',
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </div>
+                )}
+
+                {showPropertyAge && (
+                  <div className="space-y-2">
+                    <Label>Property Age</Label>
+                    <Select
+                      value={formData.propertyAge || ''}
+                      onChange={(e) =>
+                        updateField(
+                          'propertyAge',
+                          (e.target.value || undefined) as PropertyFormData['propertyAge']
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="NEW">New</option>
+                      <option value="1-5">1-5 Yrs</option>
+                      <option value="5-10">5-10 Yrs</option>
+                      <option value="10-20">10-20 Yrs</option>
+                      <option value="20+">20+ Yrs</option>
+                    </Select>
+                  </div>
+                )}
+
+                {showFurnished && (
+                  <div className="space-y-2">
+                    <Label>Furnished Status</Label>
+                    <Select
+                      value={formData.furnished || ''}
+                      onChange={(e) =>
+                        updateField(
+                          'furnished',
+                          (e.target.value || undefined) as PropertyFormData['furnished']
+                        )
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="UNFURNISHED">Unfurnished</option>
+                      <option value="SEMI_FURNISHED">Semi-furnished</option>
+                      <option value="FURNISHED">Furnished</option>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -620,8 +651,8 @@ export function UploadPropertyForm({
               <div>
                 <Label className="mb-3 block">Amenities</Label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {AMENITIES.map((amenity) => {
-                    const Icon = AMENITY_ICONS[amenity.icon]
+                  {(isPlotOrAgri ? PLOT_AMENITIES : AMENITIES).map((amenity) => {
+                    const Icon = AMENITY_ICONS[amenity.icon] || Zap
                     const checked = formData.amenities?.includes(amenity.id)
                     return (
                       <button

@@ -155,7 +155,7 @@ export function ContactCard({
             </button>
           </div>
 
-          {/* Inquiry Form */}
+          {/* Inquiry Form
           <div className="border-t border-cream-dark pt-5">
             <h4 className="font-body font-semibold text-dark mb-3">Send Inquiry</h4>
             <textarea
@@ -173,7 +173,7 @@ export function ContactCard({
               <Send className="w-4 h-4" />
               {sending ? 'Sending...' : 'Send Inquiry'}
             </button>
-          </div>
+          </div> */}
 
 
         </>

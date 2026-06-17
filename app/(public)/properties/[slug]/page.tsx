@@ -86,6 +86,8 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     ownerName: (accessLevel === 'UNLOCKED') ? (property.sellerName || property.owner.name || 'Owner') : null,
     ownerPhone: (accessLevel === 'UNLOCKED') ? (property.contactNumber || property.owner.phone) : null,
     ownerWhatsapp: (accessLevel === 'UNLOCKED') ? (property.whatsappNumber || property.contactNumber || property.owner.phone) : null,
+    listedDateRaw: property.listedDateRaw,
+    createdAt: property.createdAt,
   }
 
   // Fetch related properties

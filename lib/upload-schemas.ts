@@ -26,7 +26,7 @@ export const step2Schema = z.object({
   bathrooms: z.number().min(0).max(20).optional(),
   balconies: z.number().min(0).max(10).optional(),
   parking: z.number().min(0).max(10).optional(),
-  floor: z.number().min(0).max(100).optional(),
+  floor: z.number().min(-1).max(100).optional(),
   totalFloors: z.number().min(1).max(100).optional(),
   propertyAge: z.enum(['NEW', '1-5', '5-10', '10-20', '20+']).optional(),
   furnished: z.enum(['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']).optional(),

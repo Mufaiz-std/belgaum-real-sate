@@ -167,56 +167,112 @@ export default function PropertyDetailsClient({
     }
   }
 
-  const keyDetails = [
-    {
+  function getOrdinalSuffix(n: number): string {
+    const s = ['th', 'st', 'nd', 'rd']
+    const v = Math.abs(n) % 100
+    return s[(v - 20) % 10] || s[v] || s[0]
+  }
+
+  const pType = (property.propertyType || '').toUpperCase()
+  const isResidentialBuilding = ['FLAT', 'APARTMENT', 'HOUSE', 'BUNGALOW', 'VILLA'].includes(pType)
+  const isCommercial = pType === 'COMMERCIAL'
+  
+  const showBedrooms = isResidentialBuilding
+  const showBathrooms = isResidentialBuilding || isCommercial
+  const showParking = isResidentialBuilding || isCommercial
+  const showFloor = pType === 'FLAT' || pType === 'APARTMENT' || isCommercial
+  const showTotalFloors = isResidentialBuilding || isCommercial
+  const showPropertyAge = isResidentialBuilding || isCommercial
+  const showFurnished = isResidentialBuilding || isCommercial
+
+  const keyDetails = []
+
+  if (showBedrooms) {
+    keyDetails.push({
       label: 'Bedrooms',
       value: property.bedrooms ? `${property.bedrooms} BHK` : 'N/A',
       icon: Bed,
-    },
-    {
+    })
+  }
+
+  if (showBathrooms) {
+    keyDetails.push({
       label: 'Bathrooms',
       value: property.bathrooms?.toString() || 'N/A',
       icon: Bath,
-    },
-    {
-      label: 'Area',
-      value: property.dimensions || (property.areaSqft ? `${property.areaSqft.toLocaleString()} sqft` : 'N/A'),
-      icon: Maximize2,
-    },
-    {
+    })
+  }
+
+  keyDetails.push({
+    label: 'Area',
+    value: property.dimensions || (property.areaSqft ? `${property.areaSqft.toLocaleString()} sqft` : 'N/A'),
+    icon: Maximize2,
+  })
+
+  if (showParking) {
+    keyDetails.push({
       label: 'Parking',
       value: property.parking ? `${property.parking} Covered` : 'N/A',
       icon: Car,
-    },
-    {
+    })
+  }
+
+  if (showFloor) {
+    let floorStr = 'N/A'
+    if (property.floor !== null && property.floor !== undefined) {
+      if (property.floor === 0) floorStr = 'Ground'
+      else if (property.floor === -1) floorStr = 'Basement'
+      else floorStr = `${property.floor}${getOrdinalSuffix(property.floor)}`
+    }
+    keyDetails.push({
       label: 'Floor',
-      value:
-        property.floor && property.totalFloors
-          ? `${property.floor}${getOrdinalSuffix(property.floor)} of ${property.totalFloors}`
-          : 'N/A',
+      value: floorStr,
       icon: Layers,
-    },
-    {
+    })
+  }
+
+  if (showTotalFloors) {
+    keyDetails.push({
+      label: 'Total Floors',
+      value: property.totalFloors ? property.totalFloors.toString() : 'N/A',
+      icon: Layers,
+    })
+  }
+
+  if (showPropertyAge) {
+    keyDetails.push({
       label: 'Property Age',
       value: property.propertyAge || 'N/A',
       icon: Calendar,
-    },
-    {
+    })
+  }
+
+  if (showFurnished) {
+    keyDetails.push({
       label: 'Furnished',
       value: property.furnished ? furnishedLabels[property.furnished] : 'N/A',
       icon: Sofa,
-    },
-    {
-      label: 'Ownership',
-      value: 'Freehold',
-      icon: FileCheck,
-    },
-  ]
+    })
+  }
 
-  function getOrdinalSuffix(n: number): string {
-    const s = ['th', 'st', 'nd', 'rd']
-    const v = n % 100
-    return s[(v - 20) % 10] || s[v] || s[0]
+  keyDetails.push({
+    label: 'Ownership',
+    value: 'Freehold',
+    icon: FileCheck,
+  })
+
+  let uploadDateRaw = property.listedDateRaw
+  if (!uploadDateRaw && property.createdAt) {
+    const d = new Date(property.createdAt)
+    uploadDateRaw = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+  
+  if (uploadDateRaw) {
+    keyDetails.push({
+      label: 'Listed On',
+      value: uploadDateRaw,
+      icon: Calendar,
+    })
   }
 
   return (

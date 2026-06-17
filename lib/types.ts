@@ -7,7 +7,7 @@ export interface Property {
   title: string
   area: string
   city: string
-  propertyType: 'HOUSE' | 'APARTMENT' | 'VILLA' | 'PLOT' | 'COMMERCIAL' | 'AGRICULTURAL'
+  propertyType: 'HOUSE' | 'APARTMENT' | 'FLAT' | 'BUNGALOW' | 'VILLA' | 'PLOT' | 'COMMERCIAL' | 'AGRICULTURAL' | string
   priceMin: number
   priceMax: number
   bedrooms: number | null
@@ -21,6 +21,8 @@ export interface Property {
   isFree?: boolean
   isPricePerSqFt?: boolean
   dimensions?: string | null
+  listedDateRaw?: string | null
+  createdAt?: string | Date
 }
 
 export interface PropertyDetails extends Property {

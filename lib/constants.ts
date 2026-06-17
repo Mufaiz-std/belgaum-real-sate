@@ -26,4 +26,13 @@ export const AMENITIES = [
   { id: 'Water Supply 24/7', icon: 'Droplets' },
 ] as const
 
+export const PLOT_AMENITIES = [
+  { id: 'Water Supply 24/7', icon: 'Droplets' },
+  { id: 'Sewage Facility', icon: 'Waves' },
+  { id: 'Electricity', icon: 'Zap' },
+  { id: 'Gated Security', icon: 'Shield' },
+  { id: 'Boundary Wall', icon: 'Lock' },
+  { id: 'Street Lights', icon: 'Zap' },
+] as const
+
 export const DAILY_TOKEN_LIMIT = 15
