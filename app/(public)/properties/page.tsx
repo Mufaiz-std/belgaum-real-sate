@@ -61,6 +61,7 @@ export default function PropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([])
   const [pagination, setPagination] = useState<PaginationInfo | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
   const [, startTransition] = useTransition()
 
   const fetchProperties = useCallback(async (f: Filters, sort: string, page: number) => {
@@ -91,12 +92,52 @@ export default function PropertiesPage() {
     }
   }, [])
 
-  // Fetch on mount and whenever filters/sort/page changes
+  // Initialize state from URL on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    
+    if (params.get('page')) setCurrentPage(Number(params.get('page')))
+    if (params.get('sortBy')) setSortBy(params.get('sortBy')!)
+    
+    const newFilters = { ...defaultFilters }
+    if (params.get('propertyType')) newFilters.propertyType = params.get('propertyType')!
+    if (params.get('status')) newFilters.status = params.get('status')!
+    if (params.get('bedrooms')) newFilters.bedrooms = params.get('bedrooms')!
+    if (params.get('bathrooms')) newFilters.bathrooms = params.get('bathrooms')!
+    if (params.get('priceMin')) newFilters.priceMin = params.get('priceMin')!
+    if (params.get('priceMax')) newFilters.priceMax = params.get('priceMax')!
+    if (params.get('areaMin')) newFilters.areaMin = params.get('areaMin')!
+    if (params.get('areaMax')) newFilters.areaMax = params.get('areaMax')!
+    if (params.get('search')) newFilters.search = params.get('search')!
+    
+    setFilters(newFilters)
+    setInitialized(true)
+  }, [])
+
+  // Sync state to URL and fetch whenever filters/sort/page changes
+  useEffect(() => {
+    if (!initialized) return
+
+    const params = new URLSearchParams()
+    if (currentPage > 1) params.set('page', currentPage.toString())
+    if (sortBy !== 'newest') params.set('sortBy', sortBy)
+    if (filters.propertyType !== 'All Types') params.set('propertyType', filters.propertyType)
+    if (filters.status !== 'All Status') params.set('status', filters.status)
+    if (filters.bedrooms !== 'All') params.set('bedrooms', filters.bedrooms)
+    if (filters.bathrooms !== 'All') params.set('bathrooms', filters.bathrooms)
+    if (filters.priceMin) params.set('priceMin', filters.priceMin)
+    if (filters.priceMax) params.set('priceMax', filters.priceMax)
+    if (filters.areaMin) params.set('areaMin', filters.areaMin)
+    if (filters.areaMax) params.set('areaMax', filters.areaMax)
+    if (filters.search) params.set('search', filters.search)
+
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname
+    window.history.replaceState(null, '', newUrl)
+
     startTransition(() => {
       fetchProperties(filters, sortBy, currentPage)
     })
-  }, [filters, sortBy, currentPage, fetchProperties])
+  }, [filters, sortBy, currentPage, fetchProperties, initialized])
 
   const handleSearch = () => {
     setCurrentPage(1)

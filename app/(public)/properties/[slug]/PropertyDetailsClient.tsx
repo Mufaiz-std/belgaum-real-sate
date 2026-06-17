@@ -102,7 +102,7 @@ export default function PropertyDetailsClient({
       router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`)
       return
     }
-    
+
     if (accessLevel === 'REGISTERED') {
       setUpgradeModalOpen(true)
       return
@@ -176,7 +176,7 @@ export default function PropertyDetailsClient({
   const pType = (property.propertyType || '').toUpperCase()
   const isResidentialBuilding = ['FLAT', 'APARTMENT', 'HOUSE', 'BUNGALOW', 'VILLA'].includes(pType)
   const isCommercial = pType === 'COMMERCIAL'
-  
+
   const showBedrooms = isResidentialBuilding
   const showBathrooms = isResidentialBuilding || isCommercial
   const showParking = isResidentialBuilding || isCommercial
@@ -225,7 +225,7 @@ export default function PropertyDetailsClient({
       else floorStr = `${property.floor}${getOrdinalSuffix(property.floor)}`
     }
     keyDetails.push({
-      label: 'Floor',
+      label: 'Floor Number',
       value: floorStr,
       icon: Layers,
     })
@@ -255,18 +255,18 @@ export default function PropertyDetailsClient({
     })
   }
 
-  keyDetails.push({
-    label: 'Ownership',
-    value: 'Freehold',
-    icon: FileCheck,
-  })
+  // keyDetails.push({
+  //   label: 'Ownership',
+  //   value: 'Freehold',
+  //   icon: FileCheck,
+  // })
 
   let uploadDateRaw = property.listedDateRaw
   if (!uploadDateRaw && property.createdAt) {
     const d = new Date(property.createdAt)
     uploadDateRaw = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
   }
-  
+
   if (uploadDateRaw) {
     keyDetails.push({
       label: 'Listed On',
@@ -327,11 +327,10 @@ export default function PropertyDetailsClient({
                         {property.title}
                       </h1>
                       <span
-                        className={`px-3 py-1 rounded-full font-mono text-xs font-bold ${
-                          property.status === 'ACTIVE'
-                            ? 'bg-success/20 text-success'
-                            : 'bg-neutral/20 text-neutral'
-                        }`}
+                        className={`px-3 py-1 rounded-full font-mono text-xs font-bold ${property.status === 'ACTIVE'
+                          ? 'bg-success/20 text-success'
+                          : 'bg-neutral/20 text-neutral'
+                          }`}
                       >
                         {property.status}
                       </span>
@@ -360,11 +359,10 @@ export default function PropertyDetailsClient({
                     <button
                       onClick={handleToggleSave}
                       disabled={isSaving}
-                      className={`p-3 rounded-lg border transition-colors ${
-                        saved
-                          ? 'border-gold bg-gold/10 text-gold'
-                          : 'border-cream-dark hover:border-gold hover:text-gold'
-                      } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`p-3 rounded-lg border transition-colors ${saved
+                        ? 'border-gold bg-gold/10 text-gold'
+                        : 'border-cream-dark hover:border-gold hover:text-gold'
+                        } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                       aria-label={saved ? 'Remove from saved' : 'Save property'}
                     >
                       <Bookmark className={`w-5 h-5 ${saved ? 'fill-gold' : ''}`} />
@@ -378,8 +376,8 @@ export default function PropertyDetailsClient({
                     {property.priceMin === property.priceMax ? 'Price' : 'Price Range'}
                   </p>
                   <p className="font-bold text-3xl text-brand">
-                    {property.priceMin === property.priceMax 
-                      ? formatPrice(property.priceMin) 
+                    {property.priceMin === property.priceMax
+                      ? formatPrice(property.priceMin)
                       : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
                     {property.isPricePerSqFt && <span className="text-lg font-normal text-content-muted ml-1">/ sq.ft</span>}
                   </p>
