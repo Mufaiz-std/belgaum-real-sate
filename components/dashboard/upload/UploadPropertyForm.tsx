@@ -326,21 +326,7 @@ export function UploadPropertyForm({
                 </div>
                 {errors.price && <p className="text-sm text-error">{errors.price}</p>}
 
-                <div className="flex items-center space-x-2 pt-2 border-t border-cream-dark mt-4">
-                  <input
-                    type="checkbox"
-                    id="isNegotiable"
-                    className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
-                    checked={formData.isNegotiable || false}
-                    onChange={(e) => updateField('isNegotiable', e.target.checked)}
-                  />
-                  <label
-                    htmlFor="isNegotiable"
-                    className="text-sm font-medium leading-none"
-                  >
-                    Price is Negotiable
-                  </label>
-                </div>
+
                 {/* <div className="flex items-center space-x-2 pt-2">
                   <input 
                     type="checkbox"

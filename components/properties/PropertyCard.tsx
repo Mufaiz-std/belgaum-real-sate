@@ -133,10 +133,8 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
             {isPricePerSqFt && (
               <span className="text-sm font-normal text-neutral ml-1">/ sq.ft</span>
             )}
-            {isNegotiable && (
-              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
-            )}
           </p>
+          <p className="text-xs text-neutral mt-1">*Prices are negotiable</p>
         </div>
 
         {/* Actions */}

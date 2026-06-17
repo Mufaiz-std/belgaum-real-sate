@@ -326,10 +326,8 @@ export default function PropertyDetailsClient({
                       ? formatPrice(property.priceMin) 
                       : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
                     {property.isPricePerSqFt && <span className="text-lg font-normal text-content-muted ml-1">/ sq.ft</span>}
-                    {property.isNegotiable && (
-                      <span className="text-lg font-body font-normal text-neutral ml-2">(Negotiable)</span>
-                    )}
                   </p>
+                  <p className="text-sm text-neutral mt-1">*Prices are negotiable</p>
                 </div>
 
                 {/* Key Details Grid */}
@@ -425,9 +423,10 @@ export default function PropertyDetailsClient({
                 ) : (
                   <>
                     <PropertyMap
-                      latitude={property.latitude ?? 15.8497}
-                      longitude={property.longitude ?? 74.4977}
+                      latitude={property.latitude}
+                      longitude={property.longitude}
                       address={property.address || `${property.area}, ${property.city}`}
+                      fallbackAreaString={`${property.area}, ${property.city}`}
                     />
                     {property.landmark && (
                       <div className="mt-4 p-4 bg-surface rounded-lg border border-border">
@@ -471,6 +470,7 @@ export default function PropertyDetailsClient({
                   key={prop.id}
                   property={{
                     id: prop.id,
+                    slug: prop.slug,
                     title: prop.title,
                     area: prop.area,
                     priceMin: prop.priceMin,

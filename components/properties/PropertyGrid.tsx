@@ -121,10 +121,8 @@ function GridPropertyCard({
             {property.priceMin === property.priceMax
               ? formatPrice(property.priceMin)
               : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
-            {property.isNegotiable && (
-              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
-            )}
           </p>
+          <p className="text-xs text-neutral mt-1">*Prices are negotiable</p>
         </div>
 
         {/* Actions */}
@@ -243,10 +241,8 @@ function ListPropertyCard({
             {property.priceMin === property.priceMax
               ? formatPrice(property.priceMin)
               : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
-            {property.isNegotiable && (
-              <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
-            )}
           </p>
+          <p className="text-xs text-neutral mt-1">*Prices are negotiable</p>
 
           {/* Actions */}
           <div className="flex items-center gap-3">

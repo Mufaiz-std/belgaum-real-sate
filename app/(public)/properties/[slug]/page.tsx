@@ -10,8 +10,13 @@ interface PropertyDetailsPageProps {
 
 export default async function PropertyDetailsPage({ params }: PropertyDetailsPageProps) {
   const resolvedParams = await params
-  const property = await prisma.property.findUnique({
-    where: { slug: resolvedParams.slug },
+  const property = await prisma.property.findFirst({
+    where: { 
+      OR: [
+        { slug: resolvedParams.slug },
+        { id: resolvedParams.slug }
+      ]
+    },
     include: { owner: true, images: true, amenities: true },
   })
 
@@ -96,6 +101,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
 
   const mappedRelated = relatedPropertiesDb.map(p => ({
     id: p.id,
+    slug: p.slug,
     title: p.title,
     priceMin: p.priceMin,
     priceMax: p.priceMax,
