@@ -19,6 +19,8 @@ export interface Property {
   badge?: 'FEATURED' | 'NEW' | 'HOT' | 'SOLD'
   image: string
   isNegotiable?: boolean
+  isPricePerSqFt?: boolean
+  dimensions?: string | null
 }
 
 interface PropertyCardProps {
@@ -43,7 +45,7 @@ function formatPrice(price: number): string {
 }
 
 export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
-  const { id, slug, title, area, priceMin, priceMax, beds, baths, sqft, badge, image, isNegotiable } =
+  const { id, slug, title, area, priceMin, priceMax, beds, baths, sqft, dimensions, badge, image, isNegotiable, isPricePerSqFt } =
     property
 
   return (
@@ -94,7 +96,7 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
         </h3>
 
         {/* Features */}
-        {(beds > 0 || baths > 0 || sqft > 0) && (
+        {(beds > 0 || baths > 0 || sqft > 0 || dimensions) && (
           <div className="flex items-center gap-4 mb-4 text-neutral">
             {beds > 0 && (
               <div className="flex items-center gap-1.5">
@@ -108,11 +110,11 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
                 <span className="font-mono text-sm">{baths}</span>
               </div>
             )}
-            {sqft > 0 && (
+            {(sqft > 0 || dimensions) && (
               <div className="flex items-center gap-1.5">
                 <Maximize2 className="w-4 h-4" />
                 <span className="font-mono text-sm">
-                  {sqft.toLocaleString()} sqft
+                  {dimensions || `${sqft.toLocaleString()} sqft`}
                 </span>
               </div>
             )}
@@ -128,6 +130,9 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
             {priceMin === priceMax 
               ? formatPrice(priceMin) 
               : `${formatPrice(priceMin)} – ${formatPrice(priceMax)}`}
+            {isPricePerSqFt && (
+              <span className="text-sm font-normal text-neutral ml-1">/ sq.ft</span>
+            )}
             {isNegotiable && (
               <span className="text-sm font-normal text-neutral ml-2">(Negotiable)</span>
             )}

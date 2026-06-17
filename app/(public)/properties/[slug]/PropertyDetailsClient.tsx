@@ -180,7 +180,7 @@ export default function PropertyDetailsClient({
     },
     {
       label: 'Area',
-      value: property.areaSqft ? `${property.areaSqft.toLocaleString()} sqft` : 'N/A',
+      value: property.dimensions || (property.areaSqft ? `${property.areaSqft.toLocaleString()} sqft` : 'N/A'),
       icon: Maximize2,
     },
     {
@@ -321,12 +321,13 @@ export default function PropertyDetailsClient({
                   <p className="font-mono text-xs text-neutral uppercase mb-1">
                     {property.priceMin === property.priceMax ? 'Price' : 'Price Range'}
                   </p>
-                  <p className="font-mono text-3xl text-gold font-bold flex items-baseline gap-3">
+                  <p className="font-bold text-3xl text-brand">
                     {property.priceMin === property.priceMax 
                       ? formatPrice(property.priceMin) 
                       : `${formatPrice(property.priceMin)} – ${formatPrice(property.priceMax)}`}
+                    {property.isPricePerSqFt && <span className="text-lg font-normal text-content-muted ml-1">/ sq.ft</span>}
                     {property.isNegotiable && (
-                      <span className="text-lg font-body font-normal text-neutral">(Negotiable)</span>
+                      <span className="text-lg font-body font-normal text-neutral ml-2">(Negotiable)</span>
                     )}
                   </p>
                 </div>
@@ -413,15 +414,28 @@ export default function PropertyDetailsClient({
                         <p className="font-mono text-sm text-white/70 mt-1">
                           {property.area}, {property.city}
                         </p>
+                        {property.landmark && (
+                          <p className="font-mono text-xs text-white/50 mt-1">
+                            Landmark: {property.landmark}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <PropertyMap
-                    latitude={property.latitude ?? 15.8497}
-                    longitude={property.longitude ?? 74.4977}
-                    address={property.address || `${property.area}, ${property.city}`}
-                  />
+                  <>
+                    <PropertyMap
+                      latitude={property.latitude ?? 15.8497}
+                      longitude={property.longitude ?? 74.4977}
+                      address={property.address || `${property.area}, ${property.city}`}
+                    />
+                    {property.landmark && (
+                      <div className="mt-4 p-4 bg-surface rounded-lg border border-border">
+                        <p className="text-sm font-medium text-dark">Landmark</p>
+                        <p className="text-content-muted">{property.landmark}</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             </div>
@@ -465,9 +479,11 @@ export default function PropertyDetailsClient({
                     baths: prop.bathrooms || 0,
                     sqft: prop.areaSqft || 0,
                     type: prop.propertyType,
-                    badge: prop.badge,
+                    badge: prop.badge as any,
                     image: prop.coverImage,
                     isNegotiable: prop.isNegotiable,
+                    isPricePerSqFt: prop.isPricePerSqFt,
+                    dimensions: prop.dimensions,
                   }}
                   index={index}
                 />

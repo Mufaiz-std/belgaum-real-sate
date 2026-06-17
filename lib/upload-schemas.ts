@@ -10,6 +10,8 @@ export const step1BaseSchema = z.object({
   isFree: z.boolean().optional(),
   area: z.string().min(1, 'Please select an area'),
   fullAddress: z.string().min(10, 'Please enter full address'),
+  landmark: z.string().optional(),
+  dimensions: z.string().optional(),
   contactNumber: z.string().optional(),
   whatsappNumber: z.string().optional(),
 })
@@ -31,7 +33,7 @@ export const step2Schema = z.object({
 })
 
 export const step3Schema = z.object({
-  description: z.string().min(50, 'Minimum 50 characters').max(500),
+  description: z.string().max(500).optional(),
   amenities: z.array(z.string()).optional(),
 })
 
@@ -60,6 +62,8 @@ export const INITIAL_FORM_DATA: PropertyFormData = {
   isFree: false,
   area: '',
   fullAddress: '',
+  landmark: '',
+  dimensions: '',
   contactNumber: '',
   whatsappNumber: '',
   bedrooms: undefined,

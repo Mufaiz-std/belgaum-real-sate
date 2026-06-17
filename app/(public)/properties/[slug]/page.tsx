@@ -55,6 +55,8 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     propertyType: property.propertyType as any,
     priceMin: property.priceMin,
     priceMax: property.priceMax,
+    isPricePerSqFt: property.isPricePerSqFt,
+    dimensions: property.dimensions,
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     areaSqft: property.areaSqft,
@@ -73,6 +75,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     
     // Private details shown if unlocked
     address: (accessLevel === 'UNLOCKED') ? property.address : null,
+    landmark: property.landmark || null,
     latitude: (accessLevel === 'UNLOCKED') ? property.latitude : null,
     longitude: (accessLevel === 'UNLOCKED') ? property.longitude : null,
     ownerName: (accessLevel === 'UNLOCKED') ? (property.sellerName || property.owner.name || 'Owner') : null,
@@ -94,9 +97,10 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
   const mappedRelated = relatedPropertiesDb.map(p => ({
     id: p.id,
     title: p.title,
-    area: p.area,
     priceMin: p.priceMin,
     priceMax: p.priceMax,
+    isPricePerSqFt: p.isPricePerSqFt,
+    dimensions: p.dimensions,
     bedrooms: p.bedrooms,
     bathrooms: p.bathrooms,
     areaSqft: p.areaSqft,

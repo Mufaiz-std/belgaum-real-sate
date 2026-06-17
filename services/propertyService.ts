@@ -41,7 +41,10 @@ export function sanitizeProperty(
     isFeatured: boolean
     status: PropertyStatus
     description: string
+    isPricePerSqFt: boolean
+    dimensions?: string | null
     address?: string | null
+    landmark?: string | null
     latitude?: number | null
     longitude?: number | null
     sellerName?: string | null
@@ -65,6 +68,8 @@ export function sanitizeProperty(
     propertyType: property.propertyType,
     priceMin: property.priceMin,
     priceMax: property.priceMax,
+    isPricePerSqFt: property.isPricePerSqFt,
+    dimensions: property.dimensions,
     areaSqft: property.areaSqft,
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
@@ -91,6 +96,7 @@ export function sanitizeProperty(
     return {
       ...base,
       address: property.address,
+      landmark: property.landmark,
       latitude: property.latitude,
       longitude: property.longitude,
       ownerName: property.sellerName || property.owner?.name,

@@ -359,6 +359,16 @@ export function UploadPropertyForm({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="dimensions">Property Dimensions / Size (Optional)</Label>
+                <Input
+                  id="dimensions"
+                  value={formData.dimensions || ''}
+                  onChange={(e) => updateField('dimensions', e.target.value)}
+                  placeholder="e.g. 1600 sq.ft, 40 x 40 ft"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label>Area</Label>
                 <Select
                   value={formData.area}
@@ -380,11 +390,21 @@ export function UploadPropertyForm({
                   id="fullAddress"
                   value={formData.fullAddress}
                   onChange={(e) => updateField('fullAddress', e.target.value)}
-                  placeholder="House no., street, landmark"
+                  placeholder="House no., street"
                 />
                 {errors.fullAddress && (
                   <p className="text-sm text-error">{errors.fullAddress}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="landmark">Landmark (Optional)</Label>
+                <Input
+                  id="landmark"
+                  value={formData.landmark || ''}
+                  onChange={(e) => updateField('landmark', e.target.value)}
+                  placeholder="e.g. Near bus stand, opposite to mall"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -594,7 +614,7 @@ export function UploadPropertyForm({
               <h2 className="font-headline text-xl text-dark">Description & Features</h2>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description (Optional)</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -604,7 +624,7 @@ export function UploadPropertyForm({
                   rows={5}
                 />
                 <p className="font-mono text-xs text-neutral">
-                  {formData.description.length} / 500 characters
+                  {formData.description?.length || 0} / 500 characters
                 </p>
                 {errors.description && (
                   <p className="text-sm text-error">{errors.description}</p>

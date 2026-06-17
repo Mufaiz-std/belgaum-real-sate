@@ -19,6 +19,8 @@ export interface Property {
   status: 'ACTIVE' | 'SOLD' | 'PENDING'
   isNegotiable?: boolean
   isFree?: boolean
+  isPricePerSqFt?: boolean
+  dimensions?: string | null
 }
 
 export interface PropertyDetails extends Property {
@@ -32,6 +34,7 @@ export interface PropertyDetails extends Property {
   images: string[]
   // These fields only returned by API for unlocked users:
   address: string | null
+  landmark: string | null
   latitude: number | null
   longitude: number | null
   ownerName: string | null
