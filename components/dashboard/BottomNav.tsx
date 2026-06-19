@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, PlusCircle, Star, Settings, Bookmark } from 'lucide-react'
+import { LayoutDashboard, Building2, PlusCircle, Star, Settings, Bookmark, Unlock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/dashboard/properties', label: 'Properties', icon: Building2 },
   { href: '/dashboard/upload', label: 'Upload', icon: PlusCircle },
   { href: '/dashboard/saved', label: 'Saved', icon: Bookmark },
+  { href: '/dashboard/unlocked', label: 'Unlocked', icon: Unlock },
   { href: '/dashboard/subscription', label: 'Subscription', icon: Star },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]

@@ -5,6 +5,8 @@ import { getActiveSubscription } from '@/services/subscriptionService'
 import { PaymentSuccessClient } from '@/components/payment/PaymentSuccessClient'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
+import { verifyCashfreePayment } from '@/lib/cashfree'
+import { fulfillOrder } from '@/lib/payment-fulfillment'
 
 interface PageProps {
   searchParams: Promise<{ orderId?: string }>
@@ -15,9 +17,10 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
 
   if (!orderId) {
     redirect('/pricing')
+    return null
   }
 
-  const payment = await prisma.payment.findUnique({
+  let payment = await prisma.payment.findUnique({
     where: { orderId },
     include: {
       user: { select: { email: true } },
@@ -26,6 +29,23 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
 
   if (!payment) {
     redirect('/pricing')
+    return null
+  }
+
+  // Sync status directly with Cashfree if it is still PENDING (useful for local development where webhook cannot hit localhost)
+  if (payment.status === 'PENDING') {
+    try {
+      const cfOrder = await verifyCashfreePayment(orderId)
+      if (cfOrder && cfOrder.order_status === 'PAID') {
+        payment = await fulfillOrder(
+          orderId,
+          cfOrder.cf_order_id ? String(cfOrder.cf_order_id) : orderId,
+          cfOrder
+        )
+      }
+    } catch (err) {
+      console.error('Failed to sync payment status on success page:', err)
+    }
   }
 
   const subscription =

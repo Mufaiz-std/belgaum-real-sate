@@ -8,9 +8,9 @@ export async function GET() {
     await requireAdmin()
 
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-    const yearStart = new Date(today.getFullYear(), 0, 1)
+    today.setUTCHours(0, 0, 0, 0)
+    const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1))
+    const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1))
 
     const [
       totalUsers,

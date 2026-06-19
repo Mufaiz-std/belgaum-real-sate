@@ -43,18 +43,17 @@ export function PaymentSuccessClient({
   }, [])
 
   useEffect(() => {
+    if (countdown === 0) {
+      router.push('/dashboard')
+    }
+  }, [countdown, router])
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(interval)
-          router.push('/dashboard')
-          return 0
-        }
-        return c - 1
-      })
+      setCountdown((c) => Math.max(0, c - 1))
     }, 1000)
     return () => clearInterval(interval)
-  }, [router])
+  }, [])
 
   const planLabel =
     paymentType === 'SUBSCRIPTION' && planType

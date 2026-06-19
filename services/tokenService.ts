@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 
 function todayDate(): Date {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  today.setUTCHours(0, 0, 0, 0)
   return today
 }
 
@@ -45,7 +45,7 @@ export async function consumeToken(
 export async function resetDailyUsage() {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
-  yesterday.setHours(0, 0, 0, 0)
+  yesterday.setUTCHours(0, 0, 0, 0)
 
   await prisma.dailyUsage.deleteMany({
     where: { date: { lt: yesterday } },

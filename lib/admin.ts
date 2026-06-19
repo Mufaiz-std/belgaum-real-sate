@@ -2,11 +2,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function getAdminStats() {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  today.setUTCHours(0, 0, 0, 0)
   const weekAgo = new Date(today)
   weekAgo.setDate(weekAgo.getDate() - 7)
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-  const yearStart = new Date(today.getFullYear(), 0, 1)
+  const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1))
+  const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1))
 
   const [
     totalUsers,

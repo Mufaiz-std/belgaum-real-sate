@@ -44,6 +44,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         subscriptions: {
           where: { status: 'ACTIVE', expiryDate: { gt: new Date() } },
           take: 1,
+          select: { planType: true, expiryDate: true, status: true },
         },
         _count: { select: { properties: true } },
       },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { formatDate } from '@/lib/format'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { apiFetch } from '@/lib/api-client'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { X } from 'lucide-react'
 
 interface UserRow {
   id: string
@@ -17,9 +19,17 @@ interface UserRow {
   role: string
   status: string
   createdAt: Date
-  subscriptions: { planType: string }[]
+  subscriptions: { planType: string; expiryDate: Date; status: string }[]
   _count: { properties: number }
 }
+
+const PLAN_OPTIONS = [
+  { key: 'BASIC', label: 'Basic', duration: '3 Months', price: '₹3,000' },
+  { key: 'PREMIUM', label: 'Premium', duration: '6 Months', price: '₹4,000' },
+  { key: 'GOLD', label: 'Gold', duration: '12 Months', price: '₹6,000' },
+] as const
+
+type PlanKey = 'BASIC' | 'PREMIUM' | 'GOLD'
 
 export function AdminUsersTable({
   initialUsers,
@@ -36,6 +46,11 @@ export function AdminUsersTable({
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState('ALL')
+
+  // Promote modal state
+  const [promoteUser, setPromoteUser] = useState<UserRow | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('BASIC')
+  const [promoting, setPromoting] = useState(false)
 
   const updateFilters = (p: number) => {
     const params = new URLSearchParams()
@@ -57,6 +72,40 @@ export function AdminUsersTable({
       router.refresh()
     } catch {
       toast.error('Action failed')
+    }
+  }
+
+  const handlePromote = async () => {
+    if (!promoteUser) return
+    setPromoting(true)
+    try {
+      const res = await apiFetch('/api/admin/subscriptions/grant', {
+        method: 'POST',
+        body: JSON.stringify({ userId: promoteUser.id, planType: selectedPlan }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success(`${promoteUser.name ?? promoteUser.phone} promoted to SUBSCRIBER with ${selectedPlan} plan`)
+      setPromoteUser(null)
+      router.refresh()
+    } catch {
+      toast.error('Promotion failed')
+    } finally {
+      setPromoting(false)
+    }
+  }
+
+  const handleDemote = async (user: UserRow) => {
+    if (!confirm(`Demote ${user.name ?? user.phone} to USER? Their active subscription will be cancelled.`)) return
+    try {
+      const res = await apiFetch(`/api/admin/users/${user.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role: 'USER' }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success('User demoted to USER')
+      router.refresh()
+    } catch {
+      toast.error('Demotion failed')
     }
   }
 
@@ -135,30 +184,76 @@ export function AdminUsersTable({
             </tr>
           </thead>
           <tbody>
-            {initialUsers.map((user, i) => (
-              <tr key={user.id} className="border-b border-cream-dark/50">
-                <td className="p-4 font-mono text-sm">{(page - 1) * 20 + i + 1}</td>
-                <td className="p-4 font-mono text-sm">{user.phone}</td>
-                <td className="p-4">{user.name ?? '—'}</td>
-                <td className="p-4">{roleBadge(user.role)}</td>
-                <td className="p-4">
-                  <StatusBadge status={user.status} />
-                </td>
-                <td className="p-4 font-mono text-sm">{formatDate(user.createdAt)}</td>
-                <td className="p-4 text-sm">
-                  {user.subscriptions[0]?.planType ?? '—'}
-                </td>
-                <td className="p-4">
-                  <button
-                    type="button"
-                    onClick={() => handleBan(user.id, user.status !== 'BANNED')}
-                    className="text-sm text-error hover:underline"
-                  >
-                    {user.status === 'BANNED' ? 'Unban' : 'Ban'}
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {initialUsers.map((user, i) => {
+              const activeSub = user.subscriptions.find((s) => s.status === 'ACTIVE')
+              return (
+                <tr key={user.id} className="border-b border-cream-dark/50">
+                  <td className="p-4 font-mono text-sm">{(page - 1) * 20 + i + 1}</td>
+                  <td className="p-4 font-mono text-sm">{user.phone}</td>
+                  <td className="p-4">{user.name ?? '—'}</td>
+                  <td className="p-4">{roleBadge(user.role)}</td>
+                  <td className="p-4">
+                    <StatusBadge status={user.status} />
+                  </td>
+                  <td className="p-4 font-mono text-sm">{formatDate(user.createdAt)}</td>
+                  <td className="p-4 text-sm">
+                    {activeSub ? (
+                      <div className="space-y-0.5">
+                        <p className="font-mono text-xs font-semibold text-success">{activeSub.planType}</p>
+                        <p className="font-mono text-[11px] text-neutral">
+                          Until {formatDate(activeSub.expiryDate)}
+                        </p>
+                        <Link
+                          href="/admin/subscriptions"
+                          className="font-mono text-[10px] text-gold hover:underline"
+                        >
+                          Manage →
+                        </Link>
+                      </div>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-3">
+                      {user.role !== 'ADMIN' && (
+                        <button
+                          type="button"
+                          title={
+                            user.role === 'SUBSCRIBER'
+                              ? 'Demote: Remove subscriber privileges and revert this user to a regular USER'
+                              : 'Promote: Grant this user SUBSCRIBER access — you will choose a plan'
+                          }
+                          onClick={() => {
+                            if (user.role === 'SUBSCRIBER') {
+                              handleDemote(user)
+                            } else {
+                              setSelectedPlan('BASIC')
+                              setPromoteUser(user)
+                            }
+                          }}
+                          className="text-sm text-gold hover:underline"
+                        >
+                          {user.role === 'SUBSCRIBER' ? 'Demote' : 'Promote'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title={
+                          user.status === 'BANNED'
+                            ? "Unban: Restore this user's access to the platform"
+                            : 'Ban: Block this user from accessing the platform'
+                        }
+                        onClick={() => handleBan(user.id, user.status !== 'BANNED')}
+                        className="text-sm text-error hover:underline"
+                      >
+                        {user.status === 'BANNED' ? 'Unban' : 'Ban'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -178,6 +273,73 @@ export function AdminUsersTable({
               {p}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Promote Modal */}
+      {promoteUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setPromoteUser(null)}
+              className="absolute right-4 top-4 rounded-full p-1 text-neutral hover:bg-cream"
+            >
+              <X className="size-5" />
+            </button>
+
+            <h2 className="font-headline text-2xl text-dark">Promote to Subscriber</h2>
+            <p className="mt-1 font-body text-sm text-neutral">
+              Granting access to{' '}
+              <span className="font-semibold text-dark">
+                {promoteUser.name ?? promoteUser.phone}
+              </span>
+            </p>
+
+            <p className="mt-6 mb-3 font-body text-sm font-medium text-dark">Select a plan:</p>
+            <div className="space-y-3">
+              {PLAN_OPTIONS.map((plan) => (
+                <button
+                  key={plan.key}
+                  type="button"
+                  onClick={() => setSelectedPlan(plan.key)}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-xl border-2 px-5 py-4 text-left transition-all',
+                    selectedPlan === plan.key
+                      ? 'border-gold bg-gold/5'
+                      : 'border-cream-dark hover:border-gold/50'
+                  )}
+                >
+                  <div>
+                    <p className="font-headline font-semibold text-dark">{plan.label}</p>
+                    <p className="font-body text-sm text-neutral">{plan.duration}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono font-bold text-gold">{plan.price}</p>
+                    <p className="font-mono text-xs text-neutral">Admin grant</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setPromoteUser(null)}
+                disabled={promoting}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-gold text-dark hover:bg-gold/90"
+                onClick={handlePromote}
+                disabled={promoting}
+              >
+                {promoting ? 'Promoting…' : 'Confirm Promote'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

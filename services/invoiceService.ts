@@ -107,7 +107,7 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
     font: regularFont,
     color: dark,
   })
-  page.drawText(`₹${params.amount.toLocaleString('en-IN')}`, {
+  page.drawText(`Rs. ${params.amount.toLocaleString('en-IN')}`, {
     x: width - 130,
     y: y + 8,
     size: 11,
@@ -134,7 +134,7 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
     font: regularFont,
     color: dark,
   })
-  page.drawText(`₹${baseAmount.toLocaleString('en-IN')}`, {
+  page.drawText(`Rs. ${baseAmount.toLocaleString('en-IN')}`, {
     x: width - 110,
     y,
     size: 10,
@@ -150,7 +150,7 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
     font: regularFont,
     color: dark,
   })
-  page.drawText(`₹${gstAmount.toLocaleString('en-IN')}`, {
+  page.drawText(`Rs. ${gstAmount.toLocaleString('en-IN')}`, {
     x: width - 110,
     y,
     size: 10,
@@ -166,7 +166,7 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
     font: boldFont,
     color: dark,
   })
-  page.drawText(`₹${params.amount.toLocaleString('en-IN')}`, {
+  page.drawText(`Rs. ${params.amount.toLocaleString('en-IN')}`, {
     x: width - 110,
     y,
     size: 12,

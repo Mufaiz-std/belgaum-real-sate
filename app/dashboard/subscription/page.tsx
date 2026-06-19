@@ -41,6 +41,9 @@ export default async function SubscriptionPage() {
       )
     : 0
 
+  const latestSubscription = history[0]
+  const isCancelledByAdmin = !activeSubscription && latestSubscription?.status === 'CANCELLED'
+
   const dailyLimit = activeSubscription?.dailyLimit ?? DAILY_TOKEN_LIMIT
   const tokenPercent = (tokensToday / dailyLimit) * 100
 
@@ -99,6 +102,21 @@ export default async function SubscriptionPage() {
               Upgrade to Gold
             </Button>
           </Link>
+        </div>
+      ) : isCancelledByAdmin ? (
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm border border-red-200">
+          <p className="font-body text-red-600 font-semibold">Your subscription has been cancelled by the admin.</p>
+          <p className="mt-2 font-body text-neutral text-sm">
+            Please contact the administration for more information regarding your account status.
+          </p>
+          <a
+            href="https://wa.me/918904701510?text=Hello%20Admin%2C%20my%20subscription%20on%20Belgaum%20Real%20Estate%20was%20cancelled.%20Can%20you%20please%20help%20me%20with%20this%3F"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-block rounded-xl bg-[#25D366] px-6 py-3 font-body font-bold text-white hover:bg-[#20ba5a] transition-colors shadow-sm"
+          >
+            Contact Admin on WhatsApp
+          </a>
         </div>
       ) : (
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
