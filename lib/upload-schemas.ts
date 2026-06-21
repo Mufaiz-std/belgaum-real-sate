@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const step1BaseSchema = z.object({
-  title: z.string().min(10, 'Title must be at least 10 characters').max(100),
+  title: z.string().min(1, 'Title is required').max(100),
   propertyType: z.string().min(1, 'Please select property type'),
   transactionType: z.literal('SALE'),
   price: z.number().min(1, 'Price is required'),
@@ -34,6 +34,7 @@ export const step2Schema = z.object({
 
 export const step3Schema = z.object({
   description: z.string().max(500).optional(),
+  instagramLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   amenities: z.array(z.string()).optional(),
 })
 
@@ -75,6 +76,7 @@ export const INITIAL_FORM_DATA: PropertyFormData = {
   propertyAge: undefined,
   furnished: undefined,
   description: '',
+  instagramLink: '',
   amenities: [],
   images: [],
 }

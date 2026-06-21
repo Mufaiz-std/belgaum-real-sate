@@ -30,6 +30,7 @@ const propertyFormSchema = z.object({
   propertyAge: z.enum(['NEW', '1-5', '5-10', '10-20', '20+']).optional(),
   furnished: z.enum(['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']).optional(),
   description: z.string().max(500).optional(),
+  instagramLink: z.string().optional().or(z.literal('')),
   amenities: z.array(z.string()).optional(),
   images: z.array(z.string()).min(0).max(10),
 })
@@ -87,6 +88,7 @@ export async function submitProperty(formData: PropertyFormData) {
       propertyAge: validated.propertyAge,
       furnished: validated.furnished,
       description: validated.description || '',
+      instagramLink: validated.instagramLink || null,
       ownerId: session.userId,
       status: propertyStatus,
       slug: generateSlug(validated.title),
@@ -191,6 +193,7 @@ export async function updateProperty(propertyId: string, formData: PropertyFormD
       propertyAge: validated.propertyAge,
       furnished: validated.furnished,
       description: validated.description || '',
+      instagramLink: validated.instagramLink || null,
     },
   })
 

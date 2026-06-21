@@ -648,6 +648,20 @@ export function UploadPropertyForm({
                 )}
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="instagramLink">Instagram Post Link (Optional)</Label>
+                <Input
+                  id="instagramLink"
+                  type="url"
+                  value={formData.instagramLink || ''}
+                  onChange={(e) => updateField('instagramLink', e.target.value)}
+                  placeholder="https://instagram.com/p/..."
+                />
+                {errors.instagramLink && (
+                  <p className="text-sm text-error">{errors.instagramLink}</p>
+                )}
+              </div>
+
               <div>
                 <Label className="mb-3 block">Amenities</Label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

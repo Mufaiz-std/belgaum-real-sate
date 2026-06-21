@@ -28,6 +28,7 @@ import {
   Lock,
   Camera,
   Droplets,
+  MessageCircle,
 } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -415,6 +416,19 @@ export default function PropertyDetailsClient({
                 <p className="font-body text-dark/80 leading-relaxed">
                   {property.description}
                 </p>
+                {property.instagramLink && (
+                  <div className="mt-6">
+                    <a
+                      href={property.instagramLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-cream-dark shadow-sm rounded-lg hover:border-gold hover:text-gold transition-colors font-body font-medium text-sm text-dark"
+                    >
+                      <Camera className="w-4 h-4 text-gold" />
+                      View on Instagram/Facebook
+                    </a>
+                  </div>
+                )}
               </motion.div>
 
               {/* Amenities */}
@@ -494,7 +508,7 @@ export default function PropertyDetailsClient({
             </div>
 
             {/* Right Column - Contact Card */}
-            <div className="lg:order-last">
+            <div className="lg:order-last space-y-6">
               <ContactCard
                 accessLevel={accessLevel}
                 ownerName={property.ownerName}
@@ -505,6 +519,17 @@ export default function PropertyDetailsClient({
                 onUnlockClick={handleUnlockClick}
                 isUnlocking={isUnlocking}
               />
+
+              {/* WhatsApp Channel Updates Button (Visible to all) */}
+              <div className="bg-white rounded-xl shadow-lg border border-cream-dark p-6 sticky top-[28rem]">
+                <button
+                  onClick={() => window.open('https://whatsapp.com/channel/0029Vb5xThYBVJkziT6miF3y', '_blank')}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-[#25D366] text-white font-body font-bold text-base rounded-xl hover:bg-[#22c55e] transition-colors shadow-sm"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  Join Our Channel for Daily Updates
+                </button>
+              </div>
             </div>
           </div>
 

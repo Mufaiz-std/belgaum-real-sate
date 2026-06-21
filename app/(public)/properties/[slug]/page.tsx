@@ -87,6 +87,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     ownerPhone: (accessLevel === 'UNLOCKED') ? (property.contactNumber || property.owner.phone) : null,
     ownerWhatsapp: (accessLevel === 'UNLOCKED') ? (property.whatsappNumber || property.contactNumber || property.owner.phone) : null,
     listedDateRaw: property.listedDateRaw,
+    instagramLink: (property as any).instagramLink,
     createdAt: property.createdAt,
   }
 

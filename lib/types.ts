@@ -22,6 +22,7 @@ export interface Property {
   isPricePerSqFt?: boolean
   dimensions?: string | null
   listedDateRaw?: string | null
+  instagramLink?: string | null
   createdAt?: string | Date
 }
 
