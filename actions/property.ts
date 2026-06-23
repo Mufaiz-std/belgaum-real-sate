@@ -3,39 +3,11 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit'
-import { geocodeAddress } from '@/lib/geocoding'
+import { geocodeForProperty } from '@/lib/geocoding'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
-const propertyFormSchema = z.object({
-  title: z.string().min(10).max(100),
-  propertyType: z.string().min(1),
-  transactionType: z.literal('SALE'),
-  price: z.number().min(1),
-  isPricePerSqFt: z.boolean().optional(),
-  isNegotiable: z.boolean().optional(),
-  isFree: z.boolean().optional(),
-  area: z.string().min(1),
-  fullAddress: z.string().min(10),
-  landmark: z.string().optional(),
-  dimensions: z.string().optional(),
-  contactNumber: z.string().optional(),
-  whatsappNumber: z.string().optional(),
-  bedrooms: z.number().min(0).max(20).optional(),
-  bathrooms: z.number().min(0).max(20).optional(),
-  balconies: z.number().min(0).max(10).optional(),
-  parking: z.number().min(0).max(10).optional(),
-  floor: z.number().min(0).max(100).optional(),
-  totalFloors: z.number().min(1).max(100).optional(),
-  propertyAge: z.enum(['NEW', '1-5', '5-10', '10-20', '20+']).optional(),
-  furnished: z.enum(['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']).optional(),
-  description: z.string().max(500).optional(),
-  instagramLink: z.string().optional().or(z.literal('')),
-  amenities: z.array(z.string()).optional(),
-  images: z.array(z.string()).min(0).max(10),
-})
-
-export type PropertyFormData = z.infer<typeof propertyFormSchema>
+import { fullPropertySchema, type PropertyFormData } from '@/lib/upload-schemas'
 
 function generateSlug(title: string): string {
   return (
@@ -52,14 +24,14 @@ function generateSlug(title: string): string {
 
 export async function submitProperty(formData: PropertyFormData) {
   const session = await requireAuth()
-  const validated = propertyFormSchema.parse(formData)
+  const validated = fullPropertySchema.parse(formData)
 
   // Admins bypass the approval queue — their properties go live immediately
   const isAdmin = session.role === 'ADMIN'
   const propertyStatus = isAdmin ? 'ACTIVE' : 'PENDING'
 
-  const addressToGeocode = validated.fullAddress || `${validated.area}, Belagavi`
-  const coords = await geocodeAddress(addressToGeocode)
+  // Geocode: area first (more reliable for Belagavi areas), then full address
+  const coords = await geocodeForProperty(validated.area, validated.fullAddress)
 
   const property = await prisma.property.create({
     data: {
@@ -160,10 +132,10 @@ export async function updateProperty(propertyId: string, formData: PropertyFormD
   const session = await requireAuth()
   if (session.role !== 'ADMIN') throw new Error('Unauthorized')
 
-  const validated = propertyFormSchema.parse(formData)
+  const validated = fullPropertySchema.parse(formData)
 
-  const addressToGeocode = validated.fullAddress || `${validated.area}, Belagavi`
-  const coords = await geocodeAddress(addressToGeocode)
+  // Geocode: area first (more reliable for Belagavi areas), then full address
+  const coords = await geocodeForProperty(validated.area, validated.fullAddress)
 
   const property = await prisma.property.update({
     where: { id: propertyId },
@@ -201,7 +173,7 @@ export async function updateProperty(propertyId: string, formData: PropertyFormD
   await prisma.propertyImage.deleteMany({ where: { propertyId } })
   if (validated.images?.length > 0) {
     await prisma.propertyImage.createMany({
-      data: validated.images.map((url, index) => ({
+      data: validated.images.map((url: string, index: number) => ({
         propertyId,
         imageUrl: url,
         sortOrder: index,
@@ -213,7 +185,7 @@ export async function updateProperty(propertyId: string, formData: PropertyFormD
   await prisma.propertyAmenity.deleteMany({ where: { propertyId } })
   if (validated.amenities?.length) {
     await prisma.propertyAmenity.createMany({
-      data: validated.amenities.map((name) => ({
+      data: validated.amenities.map((name: string) => ({
         propertyId,
         name,
       })),

@@ -493,8 +493,7 @@ export default function PropertyDetailsClient({
                     <PropertyMap
                       latitude={property.latitude}
                       longitude={property.longitude}
-                      address={property.address || `${property.area}, ${property.city}`}
-                      fallbackAreaString={`${property.area}, ${property.city}`}
+                      address={property.address || undefined}
                     />
                     {property.landmark && (
                       <div className="mt-4 p-4 bg-surface rounded-lg border border-border">

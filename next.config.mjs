@@ -4,7 +4,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Allow ngrok tunnel to access Next.js dev resources (HMR, etc.)
-  allowedDevOrigins: ['marmalade-essence-bagged.ngrok-free.dev'],
+  allowedDevOrigins: ['choreatic-unsombre-winnifred.ngrok-free.dev'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
@@ -18,7 +18,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ['belgaumrealestate.in', 'localhost:3000', 'marmalade-essence-bagged.ngrok-free.dev'],
+      allowedOrigins: ['belgaumrealestate.in', 'localhost:3000', 'choreatic-unsombre-winnifred.ngrok-free.dev'],
     },
   },
   async headers() {

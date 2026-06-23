@@ -67,10 +67,12 @@ enum NotifStatus {
 // ─── MODELS ───────────────────────────────────────────────────────────────────
 
 model Area {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String   @unique
+  isActive     Boolean  @default(true)
+  geocodedLat  Float?   // cached from Nominatim
+  geocodedLng  Float?   // cached from Nominatim
+  createdAt    DateTime @default(now())
 }
 
 model PropertyTypeConfig {

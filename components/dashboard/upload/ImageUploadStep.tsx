@@ -19,9 +19,25 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Upload, GripVertical, X } from 'lucide-react'
+import { Upload, GripVertical, X, AlertCircle, Loader2, ImageIcon } from 'lucide-react'
 import { uploadToCloudinary } from '@/lib/cloudinary'
+import { optimizeImage } from '@/lib/imageOptimizer'
 import { cn } from '@/lib/utils'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const MAX_FILE_SIZE = 5 * 1024 * 1024   // 5 MB pre-compression input guard
+const MAX_IMAGES = 5
+const ALLOWED_MIME = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+type UploadStage = 'compressing' | 'uploading'
+
+interface UploadEntry {
+  name: string
+  stage: UploadStage
+  progress: number     // 0-100
+  error?: string
+}
 
 interface ImageUploadStepProps {
   images: string[]
@@ -35,6 +51,7 @@ interface SortableImageProps {
   onRemove: () => void
 }
 
+// ─── SortableImage ────────────────────────────────────────────────────────────
 function SortableImage({ url, index, onRemove }: SortableImageProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: url,
@@ -79,8 +96,48 @@ function SortableImage({ url, index, onRemove }: SortableImageProps) {
   )
 }
 
+// ─── UploadProgress card ─────────────────────────────────────────────────────
+function UploadProgressCard({ entry }: { entry: UploadEntry }) {
+  if (entry.error) {
+    return (
+      <div className="flex items-start gap-3 rounded-lg border border-error/30 bg-error/5 p-3">
+        <AlertCircle className="mt-0.5 size-4 shrink-0 text-error" />
+        <div className="min-w-0">
+          <p className="truncate font-body text-sm font-medium text-dark">{entry.name}</p>
+          <p className="mt-0.5 font-mono text-xs text-error">{entry.error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const label = entry.stage === 'compressing' ? 'Optimizing…' : 'Uploading…'
+
+  return (
+    <div className="rounded-lg border border-neutral/10 bg-white p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          {entry.stage === 'compressing' ? (
+            <ImageIcon className="size-4 shrink-0 text-gold" />
+          ) : (
+            <Loader2 className="size-4 shrink-0 animate-spin text-gold" />
+          )}
+          <p className="truncate font-body text-sm text-dark">{entry.name}</p>
+        </div>
+        <span className="ml-2 shrink-0 font-mono text-xs text-neutral">{label}</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-cream-dark">
+        <div
+          className="h-full rounded-full bg-gold transition-all duration-300"
+          style={{ width: `${entry.progress}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export function ImageUploadStep({ images, onChange, error }: ImageUploadStepProps) {
-  const [uploading, setUploading] = useState<Record<string, number>>({})
+  const [uploadMap, setUploadMap] = useState<Record<string, UploadEntry>>({})
   const [dragOver, setDragOver] = useState(false)
 
   const sensors = useSensors(
@@ -88,60 +145,89 @@ export function ImageUploadStep({ images, onChange, error }: ImageUploadStepProp
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const setEntry = (id: string, patch: Partial<UploadEntry>) =>
+    setUploadMap((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
+
+  const removeEntry = (id: string) =>
+    setUploadMap((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+
+  // Clear stale error cards after 4 seconds
+  const scheduleErrorCleanup = (id: string) =>
+    setTimeout(() => removeEntry(id), 4000)
+
+  // ── File handling ─────────────────────────────────────────────────────────
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
-      const fileArray = Array.from(files).filter(
-        (f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024
-      )
+      const valid = Array.from(files).filter((f) => {
+        if (!ALLOWED_MIME.includes(f.type)) return false
+        if (f.size > MAX_FILE_SIZE) return false
+        return true
+      })
 
-      if (images.length + fileArray.length > 10) return
+      // Respect max limit
+      const slots = MAX_IMAGES - images.length
+      const toProcess = valid.slice(0, slots)
+      if (toProcess.length === 0) return
 
       let currentImages = [...images]
 
-      for (const file of fileArray) {
-        const tempId = `uploading-${file.name}-${Date.now()}`
-        setUploading((prev) => ({ ...prev, [tempId]: 0 }))
+      for (const file of toProcess) {
+        const id = `${file.name}-${Date.now()}`
+
+        // Register entry
+        setUploadMap((prev) => ({
+          ...prev,
+          [id]: { name: file.name, stage: 'compressing', progress: 10 },
+        }))
 
         try {
-          setUploading((prev) => ({ ...prev, [tempId]: 50 }))
-          const url = await uploadToCloudinary(file)
+          // ── Step 1: Optimize (Canvas resize + WEBP conversion + compress) ──
+          const result = await optimizeImage(file)
+          setEntry(id, { stage: 'compressing', progress: 50 })
+
+          // ── Step 2: Transition to upload ──────────────────────────────────
+          setEntry(id, { stage: 'uploading', progress: 60 })
+          const url = await uploadToCloudinary(result.file)
+
+          // ── Step 3: Success ───────────────────────────────────────────────
+          setEntry(id, { stage: 'uploading', progress: 100 })
           currentImages = [...currentImages, url]
           onChange(currentImages)
-          setUploading((prev) => {
-            const next = { ...prev }
-            delete next[tempId]
-            return next
-          })
-        } catch {
-          setUploading((prev) => {
-            const next = { ...prev }
-            delete next[tempId]
-            return next
-          })
+          // Short delay so user sees 100% before card disappears
+          setTimeout(() => removeEntry(id), 600)
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Upload failed'
+          setEntry(id, { stage: 'uploading', progress: 0, error: message })
+          scheduleErrorCleanup(id)
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [images, onChange]
   )
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
     const oldIndex = images.indexOf(String(active.id))
     const newIndex = images.indexOf(String(over.id))
     onChange(arrayMove(images, oldIndex, newIndex))
   }
 
-  const uploadingCount = Object.keys(uploading).length
+  const entries = Object.entries(uploadMap)
+  const isFull = images.length >= MAX_IMAGES
+  const activeUploads = entries.filter(([, e]) => !e.error).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Drop zone */}
       <div
-        onDragOver={(e) => {
-          e.preventDefault()
-          setDragOver(true)
-        }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault()
@@ -151,13 +237,14 @@ export function ImageUploadStep({ images, onChange, error }: ImageUploadStepProp
         className={cn(
           'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-cream p-12 transition-colors',
           dragOver ? 'border-gold bg-gold/5' : 'border-neutral/30',
-          images.length >= 10 && 'pointer-events-none opacity-50'
+          isFull && 'pointer-events-none opacity-50'
         )}
         onClick={() => {
+          if (isFull) return
           const input = document.createElement('input')
           input.type = 'file'
           input.multiple = true
-          input.accept = 'image/jpeg,image/png,image/webp'
+          input.accept = 'image/jpeg,image/jpg,image/png,image/webp'
           input.onchange = (e) => {
             const files = (e.target as HTMLInputElement).files
             if (files) handleFiles(files)
@@ -167,29 +254,26 @@ export function ImageUploadStep({ images, onChange, error }: ImageUploadStepProp
       >
         <Upload className="size-12 text-gold" />
         <p className="mt-4 font-body text-dark">
-          Drag & drop photos here, or click to browse
+          Drag &amp; drop photos here, or click to browse
         </p>
         <p className="mt-2 font-mono text-xs text-neutral">
-          JPG, PNG up to 5MB each | Min 3, Max 10 photos
+          JPG, PNG, WEBP · up to 5 MB each · Max {MAX_IMAGES} photos
+        </p>
+        <p className="mt-1 font-mono text-xs text-neutral/60">
+          Images are auto-optimized to ~200 KB before upload
         </p>
       </div>
 
-      {uploadingCount > 0 && (
+      {/* Progress cards */}
+      {entries.length > 0 && (
         <div className="space-y-2">
-          {Object.entries(uploading).map(([id, progress]) => (
-            <div key={id} className="rounded-lg bg-white p-3">
-              <p className="font-body text-sm text-neutral">Uploading...</p>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-cream-dark">
-                <div
-                  className="h-full rounded-full bg-gold transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+          {entries.map(([id, entry]) => (
+            <UploadProgressCard key={id} entry={entry} />
           ))}
         </div>
       )}
 
+      {/* Uploaded image grid */}
       {images.length > 0 && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={images} strategy={rectSortingStrategy}>
@@ -207,6 +291,14 @@ export function ImageUploadStep({ images, onChange, error }: ImageUploadStepProp
         </DndContext>
       )}
 
+      {/* Counter */}
+      {(images.length > 0 || activeUploads > 0) && (
+        <p className="font-mono text-xs text-neutral/60 text-right">
+          {images.length} / {MAX_IMAGES} photos uploaded
+        </p>
+      )}
+
+      {/* Validation error */}
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
   )

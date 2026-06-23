@@ -54,8 +54,8 @@ export function PropertyGallery({
           onClick={() => !galleryLocked && setLightboxOpen(true)}
         >
           <Image
-            src={images[0]}
-            alt={`${title} - Cover Photo`}
+            src={images[activeIndex]}
+            alt={`${title} - Photo ${activeIndex + 1}`}
             fill
             className="object-cover"
             sizes="(max-width: 1200px) 100vw, 65vw"
