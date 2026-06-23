@@ -24,14 +24,14 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
 
   page.drawRectangle({ x: 0, y: height - 120, width, height: 120, color: dark })
 
-  page.drawText('BELGAUM REAL ESTATE', {
+  page.drawText('XCITY REAL ESTATE', {
     x: 40,
     y: height - 50,
     size: 20,
     font: boldFont,
     color: gold,
   })
-  page.drawText('belgaumrealestate.in', {
+  page.drawText('xcityrealestate.in', {
     x: 40,
     y: height - 75,
     size: 12,
@@ -175,10 +175,10 @@ export async function generateInvoice(params: InvoiceParams): Promise<string> {
   })
 
   page.drawText(
-    'Thank you for choosing BelgaumRealEstate.in — Zero Brokerage. Direct Owner Contact.',
+    'Thank you for choosing XcityRealEstate.in — Zero Brokerage. Direct Owner Contact.',
     { x: 40, y: 60, size: 9, font: regularFont, color: rgb(0.5, 0.5, 0.5) }
   )
-  page.drawText('For support: support@belgaumrealestate.in | Belagavi, Karnataka 590001', {
+  page.drawText('For support: support@xcityrealestate.in | Belagavi, Karnataka 590001', {
     x: 40,
     y: 42,
     size: 9,

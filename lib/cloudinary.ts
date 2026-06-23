@@ -7,7 +7,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
-  formData.append('folder', 'belgaum-real-estate/properties')
+  formData.append('folder', 'xcity-real-estate/properties')
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -42,7 +42,7 @@ export async function uploadInvoiceToCloudinary(
   const formData = new FormData()
   formData.append('file', `data:application/pdf;base64,${base64}`)
   formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
-  formData.append('folder', 'belgaum-real-estate/invoices')
+  formData.append('folder', 'xcity-real-estate/invoices')
   formData.append('public_id', orderId)
 
   const res = await fetch(

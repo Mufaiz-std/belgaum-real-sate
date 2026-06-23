@@ -110,7 +110,7 @@ export default async function SubscriptionPage() {
             Please contact the administration for more information regarding your account status.
           </p>
           <a
-            href="https://wa.me/918904701510?text=Hello%20Admin%2C%20my%20subscription%20on%20Belgaum%20Real%20Estate%20was%20cancelled.%20Can%20you%20please%20help%20me%20with%20this%3F"
+            href="https://wa.me/918904701510?text=Hello%20Admin%2C%20my%20subscription%20on%20Xcity%20RealEstate%20was%20cancelled.%20Can%20you%20please%20help%20me%20with%20this%3F"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-block rounded-xl bg-[#25D366] px-6 py-3 font-body font-bold text-white hover:bg-[#20ba5a] transition-colors shadow-sm"

@@ -86,7 +86,7 @@ async function nominatimSearch(
       `?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=in`
 
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'BelgaumRealEstateApp/1.0' },
+      headers: { 'User-Agent': 'XcityRealEstateApp/1.0' },
     })
 
     if (!response.ok) return null

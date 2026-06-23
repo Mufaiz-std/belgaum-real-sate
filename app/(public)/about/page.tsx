@@ -5,7 +5,7 @@ import { Shield, Users, MapPin, Zap } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'About Us',
   description:
-    'BelgaumRealEstate.in is Belagavi\'s zero-brokerage property marketplace. Connect directly with verified property owners.',
+    'XcityRealEstate.in is Belagavi\'s zero-brokerage property marketplace. Connect directly with verified property owners.',
 }
 
 const values = [
@@ -34,12 +34,12 @@ const values = [
 export default function AboutPage() {
   return (
     <PublicPageShell
-      title="About BelgaumRealEstate.in"
+      title="About XcityRealEstate.in"
       subtitle="Belagavi's trusted zero-brokerage property marketplace"
     >
       <div className="space-y-8 font-body text-neutral leading-relaxed">
         <p>
-          BelgaumRealEstate.in was built for buyers and sellers in Belagavi who are tired of
+          XcityRealEstate.in was built for buyers and sellers in Belagavi who are tired of
           brokerage fees and unreliable listings. We connect you directly with property owners
           — whether you are looking for a flat in Tilakwadi, a plot in Shahapur, or commercial
           space near Camp Area.

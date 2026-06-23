@@ -54,7 +54,7 @@ export function Sidebar({ phone, role, tokensToday, isSubscriber }: SidebarProps
         <Link href="/" className="flex items-center gap-2">
           <Home className="size-6 text-gold" />
           <div className="font-mono text-xs text-white leading-tight">
-            <span className="block font-bold text-gold">BELGAUM</span>
+            <span className="block font-bold text-gold">XCITY</span>
             <span className="block">REAL ESTATE</span>
           </div>
         </Link>

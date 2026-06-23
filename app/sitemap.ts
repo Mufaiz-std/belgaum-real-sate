@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://belgaumrealestate.in'
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://xcityrealestate.in'
 
   const staticPages: MetadataRoute.Sitemap = [
     {

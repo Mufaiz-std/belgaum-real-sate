@@ -31,13 +31,13 @@ export async function sendPaymentSuccessWhatsApp(
   amount: number,
   planType: string | null
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://belgaumrealestate.in'
-  const message = `✅ *Payment Confirmed — BelgaumRealEstate.in*\n\nAmount: ₹${amount.toLocaleString('en-IN')}\nPlan: ${planType || 'Single Property Access'}\n\nYou can now access owner contacts and property details.\n\n🏠 Browse: ${appUrl}/properties`
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://xcityrealestate.in'
+  const message = `✅ *Payment Confirmed — XcityRealEstate.in*\n\nAmount: ₹${amount.toLocaleString('en-IN')}\nPlan: ${planType || 'Single Property Access'}\n\nYou can now access owner contacts and property details.\n\n🏠 Browse: ${appUrl}/properties`
   await sendWhatsAppMessage(phone, message)
 }
 
 export async function sendPropertyApprovedWhatsApp(phone: string, propertyTitle: string) {
-  const message = `✅ *Property Approved*\n\nYour listing "${propertyTitle}" is now live on BelgaumRealEstate.in.`
+  const message = `✅ *Property Approved*\n\nYour listing "${propertyTitle}" is now live on XcityRealEstate.in.`
   await sendWhatsAppMessage(phone, message)
 }
 

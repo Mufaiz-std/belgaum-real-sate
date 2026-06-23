@@ -10,7 +10,7 @@ export function PropertyListingSchema({
   property: PropertyWithImages
 }) {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://belgaumrealestate.in'
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://xcityrealestate.in'
 
   const jsonLd = {
     '@context': 'https://schema.org',

@@ -158,7 +158,7 @@ export function HeroBanner() {
           className="font-mono text-gold text-sm mb-6"
           variants={itemVariants}
         >
-          Belgaum &gt; Zero Brokerage Property Marketplace
+          Xcity &gt; Zero Brokerage Property Marketplace
         </motion.p>
 
         {/* Headline */}

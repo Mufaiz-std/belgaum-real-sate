@@ -16,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://belgaumrealestate.in'
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://xcityrealestate.in'
 
   try {
     const property = await getPropertyBySlug(slug)
@@ -43,7 +43,7 @@ export async function generateMetadata({
       },
     }
   } catch {
-    return { title: 'Property | BelgaumRealEstate.in' }
+    return { title: 'Property | XcityRealEstate.in' }
   }
 }
 

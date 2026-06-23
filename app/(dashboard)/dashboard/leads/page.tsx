@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 
 export const metadata = {
-  title: 'My Leads | Belgaum Real Estate',
+  title: 'My Leads | Xcity RealEstate',
 }
 
 export default async function LeadsPage() {

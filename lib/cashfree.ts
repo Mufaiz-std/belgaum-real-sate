@@ -40,7 +40,7 @@ export async function createCashfreeOrder(params: CreateOrderParams): Promise<Ca
       customer_name: params.customerName,
       customer_phone: params.customerPhone,
       customer_email:
-        params.customerEmail || `${params.customerPhone}@belgaumrealestate.in`,
+        params.customerEmail || `${params.customerPhone}@xcityrealestate.in`,
     },
     order_meta: {
       return_url: params.returnUrl,

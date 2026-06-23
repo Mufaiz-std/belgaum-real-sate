@@ -2,11 +2,11 @@ export function LocalBusinessSchema() {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
-    name: 'BelgaumRealEstate.in',
+    name: 'XcityRealEstate.in',
     description:
       'Zero brokerage real estate marketplace for Belagavi, Karnataka. Connect directly with property owners.',
-    url: 'https://belgaumrealestate.in',
-    email: 'info@belgaumrealestate.in',
+    url: 'https://xcityrealestate.in',
+    email: 'info@xcityrealestate.in',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Belagavi',

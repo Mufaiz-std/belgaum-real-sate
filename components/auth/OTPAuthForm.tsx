@@ -111,7 +111,7 @@
 //         <div className="mb-8 flex flex-col items-center gap-2">
 //           <Home className="size-10 text-gold" />
 //           <div className="text-center font-mono text-xs text-dark">
-//             <span className="block font-bold text-gold">BELGAUM</span>
+//             <span className="block font-bold text-gold">XCITY</span>
 //             <span className="block">REAL ESTATE</span>
 //           </div>
 //         </div>
@@ -479,7 +479,7 @@ export function OTPAuthForm({
         <div className="mb-8 flex flex-col items-center gap-2">
           <Home className="size-10 text-gold" />
           <div className="text-center font-mono text-xs text-dark">
-            <span className="block font-bold text-gold">BELGAUM</span>
+            <span className="block font-bold text-gold">XCITY</span>
             <span className="block">REAL ESTATE</span>
           </div>
         </div>

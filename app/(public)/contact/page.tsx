@@ -63,7 +63,7 @@ export default function ContactPage() {
             <Mail className="mt-1 size-5 shrink-0 text-gold" />
             <div>
               <p className="font-semibold text-dark">Email</p>
-              <p className="text-sm text-neutral">hello@belgaumrealestate.in</p>
+              <p className="text-sm text-neutral">hello@xcityrealestate.in</p>
             </div>
           </div>
           <p className="text-sm text-neutral">

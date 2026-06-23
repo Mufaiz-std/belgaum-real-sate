@@ -26,16 +26,16 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://belgaumrealestate.in'),
+  metadataBase: new URL('https://xcityrealestate.in'),
   title: {
     default:
-      'Belgaum Real Estate | Buy & Sell Property in Belagavi | Zero Brokerage',
-    template: '%s | BelgaumRealEstate.in',
+      'Xcity RealEstate | Buy & Sell Property in Belagavi | Zero Brokerage',
+    template: '%s | XcityRealEstate.in',
   },
   description:
     'Find flats, plots, houses, villas and commercial properties in Belagavi with direct owner contact. Zero brokerage. Browse verified listings in Tilakwadi, Shahapur, Camp Area and more.',
   keywords: [
-    'Belgaum Real Estate',
+    'Xcity RealEstate',
     'Belagavi Property',
     'Plots in Belgaum',
     'House for Sale Belgaum',
@@ -45,15 +45,15 @@ export const metadata: Metadata = {
     'Property in Tilakwadi',
     'Direct Owner Contact',
   ],
-  authors: [{ name: 'BelgaumRealEstate.in' }],
-  creator: 'BelgaumRealEstate.in',
-  publisher: 'BelgaumRealEstate.in',
+  authors: [{ name: 'XcityRealEstate.in' }],
+  creator: 'XcityRealEstate.in',
+  publisher: 'XcityRealEstate.in',
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://belgaumrealestate.in',
-    siteName: 'BelgaumRealEstate.in',
-    title: 'Belgaum Real Estate | Buy & Sell Property in Belagavi',
+    url: 'https://xcityrealestate.in',
+    siteName: 'XcityRealEstate.in',
+    title: 'Xcity RealEstate | Buy & Sell Property in Belagavi',
     description:
       'Find flats, plots, houses and commercial properties in Belagavi with direct owner contact. Zero brokerage.',
     images: [
@@ -61,13 +61,13 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'BelgaumRealEstate.in — Zero Brokerage Property Marketplace',
+        alt: 'XcityRealEstate.in — Zero Brokerage Property Marketplace',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Belgaum Real Estate | Zero Brokerage',
+    title: 'Xcity RealEstate | Zero Brokerage',
     description:
       'Find verified properties in Belagavi with direct owner contact.',
     images: ['/og-image.jpg'],
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://belgaumrealestate.in',
+    canonical: 'https://xcityrealestate.in',
   },
   icons: {
     icon: [

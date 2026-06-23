@@ -47,7 +47,7 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <Home className="w-8 h-8 text-gold" />
               <div className="font-mono text-gold text-sm leading-tight">
-                <span className="block font-bold">BELGAUM</span>
+                <span className="block font-bold">XCITY</span>
                 <span className="block">REAL ESTATE</span>
               </div>
             </Link>
@@ -65,7 +65,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-cream/70">
                 <Mail className="w-4 h-4 text-gold shrink-0" />
-                <span>hello@belgaumrealestate.in</span>
+                <span>hello@xcityrealestate.in</span>
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="font-body text-cream/50 text-sm text-center sm:text-left">
-              © 2025 BelgaumRealEstate.in. All rights reserved.
+              © 2025 XcityRealEstate.in. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link

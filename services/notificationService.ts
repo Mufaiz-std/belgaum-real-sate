@@ -33,23 +33,23 @@ function emailWrapper(content: string): string {
 </head>
 <body>
   <div class="container">
-    <div class="header"><div class="logo">BELGAUM REAL ESTATE</div></div>
+    <div class="header"><div class="logo">XCITY REAL ESTATE</div></div>
     <div class="body">${content}</div>
     <div class="footer">
-      © 2025 BelgaumRealEstate.in · Belagavi, Karnataka<br>
-      <a href="https://belgaumrealestate.in">belgaumrealestate.in</a>
+      © 2025 XcityRealEstate.in · Belagavi, Karnataka<br>
+      <a href="https://xcityrealestate.in">xcityrealestate.in</a>
     </div>
   </div>
 </body>
 </html>`
 }
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://belgaumrealestate.in'
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://xcityrealestate.in'
 
 async function sendEmail(to: string, subject: string, html: string) {
   if (!to || !process.env.SMTP_USER) return
   await transporter.sendMail({
-    from: `"BelgaumRealEstate.in" <${process.env.SMTP_USER}>`,
+    from: `"XcityRealEstate.in" <${process.env.SMTP_USER}>`,
     to,
     subject,
     html: emailWrapper(html),
@@ -87,7 +87,7 @@ export async function sendPaymentSuccessEmail({
     </a>
   `
 
-  await sendEmail(to, 'Payment Successful — BelgaumRealEstate.in', content)
+  await sendEmail(to, 'Payment Successful — XcityRealEstate.in', content)
 }
 
 export async function sendPropertyApprovedEmail({
@@ -105,10 +105,10 @@ export async function sendPropertyApprovedEmail({
   const content = `
     <h1 class="title">Property Approved ✅</h1>
     <p class="text">Hi ${customerName || 'there'},</p>
-    <p class="text">Your property <strong>"${propertyTitle}"</strong> has been approved and is now live on BelgaumRealEstate.in.</p>
+    <p class="text">Your property <strong>"${propertyTitle}"</strong> has been approved and is now live on XcityRealEstate.in.</p>
     <a href="${appUrl}/properties/${propertySlug}" class="btn">View Your Listing</a>
   `
-  await sendEmail(to, 'Your property is now live — BelgaumRealEstate.in', content)
+  await sendEmail(to, 'Your property is now live — XcityRealEstate.in', content)
 }
 
 export async function sendPropertyRejectedEmail({
@@ -131,7 +131,7 @@ export async function sendPropertyRejectedEmail({
     <p class="text">Please update your listing and resubmit. Contact support if you have questions.</p>
     <a href="${appUrl}/dashboard/properties" class="btn">View My Properties</a>
   `
-  await sendEmail(to, 'Property listing update — BelgaumRealEstate.in', content)
+  await sendEmail(to, 'Property listing update — XcityRealEstate.in', content)
 }
 
 export async function sendSubscriptionExpiryWarning({
@@ -157,7 +157,7 @@ export async function sendSubscriptionExpiryWarning({
   `
   await sendEmail(
     to,
-    `Your BelgaumRealEstate.in subscription expires in ${daysLeft} days`,
+    `Your XcityRealEstate.in subscription expires in ${daysLeft} days`,
     content
   )
 }

@@ -99,7 +99,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-3">
             <Home className="w-8 h-8 text-gold" />
             <div className="font-mono text-gold text-sm leading-tight">
-              <span className="block font-bold">BELGAUM</span>
+              <span className="block font-bold">XCITY</span>
               <span className="block">REAL ESTATE</span>
             </div>
           </Link>

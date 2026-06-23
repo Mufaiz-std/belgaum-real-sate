@@ -1,4 +1,4 @@
-// Property types for BelgaumRealEstate.in
+// Property types for XcityRealEstate.in
 // TODO: Replace with API types from backend
 
 export interface Property {

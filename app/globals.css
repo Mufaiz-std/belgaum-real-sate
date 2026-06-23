@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* BelgaumRealEstate Design System */
+  /* XcityRealEstate Design System */
   --gold: #D4A017;
   --gold-light: #E8C547;
   --gold-dark: #A07810;

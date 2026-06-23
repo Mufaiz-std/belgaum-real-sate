@@ -3,12 +3,12 @@ import { PublicPageShell } from '@/components/layout/PublicPageShell'
 
 export const metadata: Metadata = {
   title: 'FAQ',
-  description: 'Frequently asked questions about BelgaumRealEstate.in subscriptions, listings, and payments.',
+  description: 'Frequently asked questions about XcityRealEstate.in subscriptions, listings, and payments.',
 }
 
 const faqs = [
   {
-    q: 'Is BelgaumRealEstate.in a brokerage?',
+    q: 'Is XcityRealEstate.in a brokerage?',
     a: 'No. We are a zero-brokerage marketplace. You connect directly with property owners. We charge a subscription or one-time unlock fee for platform access — not brokerage on transactions.',
   },
   {

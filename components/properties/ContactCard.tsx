@@ -80,7 +80,7 @@ export function ContactCard({
   const handleWhatsApp = () => {
     if (ownerWhatsapp) {
       const message = encodeURIComponent(
-        `Hi, I'm interested in your property listed on BelgaumRealEstate.in`
+        `Hi, I'm interested in your property listed on XcityRealEstate.in`
       )
       window.open(`https://wa.me/${ownerWhatsapp}?text=${message}`, '_blank')
     }

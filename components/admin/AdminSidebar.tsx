@@ -51,7 +51,7 @@ function SidebarContent({
         <Link href="/admin" className="flex items-center gap-2" onClick={onNavClick}>
           <Home className="size-6 text-gold" />
           <div>
-            <div className="font-mono text-xs font-bold text-gold">BELGAUM REAL ESTATE</div>
+            <div className="font-mono text-xs font-bold text-gold">XCITY REAL ESTATE</div>
             <div className="font-mono text-[10px] text-cream/50">Admin Panel</div>
           </div>
         </Link>
@@ -145,7 +145,7 @@ export function AdminSidebar({ adminName, adminPhone, pendingCount }: AdminSideb
         <Link href="/admin" className="flex items-center gap-2">
           <Home className="size-5 text-gold" />
           <div className="font-mono text-xs font-bold text-gold leading-none">
-            BELGAUM<br />
+            XCITY<br />
             <span className="text-cream/50 font-normal">Admin Panel</span>
           </div>
         </Link>
