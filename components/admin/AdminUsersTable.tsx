@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatIndianPrice } from '@/lib/format'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -23,24 +23,27 @@ interface UserRow {
   _count: { properties: number }
 }
 
-const PLAN_OPTIONS = [
-  { key: 'BASIC', label: 'Basic', duration: '3 Months', price: '₹3,000' },
-  { key: 'PREMIUM', label: 'Premium', duration: '6 Months', price: '₹4,000' },
-  { key: 'GOLD', label: 'Gold', duration: '12 Months', price: '₹6,000' },
-] as const
-
-type PlanKey = 'BASIC' | 'PREMIUM' | 'GOLD'
+interface PlanConfig {
+  id: string
+  planKey: string
+  name: string
+  duration: string
+  price: number
+  dailyLimit: number
+}
 
 export function AdminUsersTable({
   initialUsers,
   total,
   page,
   totalPages,
+  planConfigs,
 }: {
   initialUsers: UserRow[]
   total: number
   page: number
   totalPages: number
+  planConfigs: PlanConfig[]
 }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -49,7 +52,7 @@ export function AdminUsersTable({
 
   // Promote modal state
   const [promoteUser, setPromoteUser] = useState<UserRow | null>(null)
-  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('BASIC')
+  const [selectedPlan, setSelectedPlan] = useState(planConfigs[0]?.planKey ?? 'BASIC')
   const [promoting, setPromoting] = useState(false)
 
   const updateFilters = (p: number) => {
@@ -228,7 +231,7 @@ export function AdminUsersTable({
                             if (user.role === 'SUBSCRIBER') {
                               handleDemote(user)
                             } else {
-                              setSelectedPlan('BASIC')
+                              setSelectedPlan(planConfigs[0]?.planKey ?? 'BASIC')
                               setPromoteUser(user)
                             }
                           }}
@@ -298,24 +301,24 @@ export function AdminUsersTable({
 
             <p className="mt-6 mb-3 font-body text-sm font-medium text-dark">Select a plan:</p>
             <div className="space-y-3">
-              {PLAN_OPTIONS.map((plan) => (
+              {planConfigs.map((plan) => (
                 <button
-                  key={plan.key}
+                  key={plan.planKey}
                   type="button"
-                  onClick={() => setSelectedPlan(plan.key)}
+                  onClick={() => setSelectedPlan(plan.planKey)}
                   className={cn(
                     'flex w-full items-center justify-between rounded-xl border-2 px-5 py-4 text-left transition-all',
-                    selectedPlan === plan.key
+                    selectedPlan === plan.planKey
                       ? 'border-gold bg-gold/5'
                       : 'border-cream-dark hover:border-gold/50'
                   )}
                 >
                   <div>
-                    <p className="font-headline font-semibold text-dark">{plan.label}</p>
+                    <p className="font-headline font-semibold text-dark">{plan.name}</p>
                     <p className="font-body text-sm text-neutral">{plan.duration}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono font-bold text-gold">{plan.price}</p>
+                    <p className="font-mono font-bold text-gold">{formatIndianPrice(plan.price)}</p>
                     <p className="font-mono text-xs text-neutral">Admin grant</p>
                   </div>
                 </button>

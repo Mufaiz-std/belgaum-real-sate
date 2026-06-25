@@ -14,6 +14,7 @@ import {
   Bookmark,
   MessageCircle,
   Unlock,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { maskPhone } from '@/lib/format'
@@ -84,10 +85,18 @@ export function Sidebar({ phone, role, tokensToday, isSubscriber }: SidebarProps
           )
         })}
 
+        <Link
+          href="/"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-cream/70 transition-colors hover:bg-white/5 hover:text-cream"
+        >
+          <ExternalLink className="size-4 shrink-0" />
+          Back to Site
+        </Link>
+
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-cream/70 transition-colors hover:bg-white/5 hover:text-cream"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="size-4 shrink-0" />
           Logout

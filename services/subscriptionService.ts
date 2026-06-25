@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { PlanType } from '@prisma/client'
 
 export async function getActiveSubscription(userId: string) {
   return prisma.subscription.findFirst({
@@ -14,7 +13,8 @@ export async function getActiveSubscription(userId: string) {
 export async function createSubscription(
   userId: string,
   planType: string,
-  _paymentId: string
+  _paymentId: string,
+  paidAmount?: number
 ) {
   const planConfig = await prisma.planConfig.findUnique({
     where: { planKey: planType },
@@ -24,19 +24,38 @@ export async function createSubscription(
     throw new Error('Invalid plan type')
   }
 
-  // Parse duration text to days (e.g. "3 Months" -> ~90 days)
-  let durationDays = 30
-  const durationLower = planConfig.duration.toLowerCase()
-  if (durationLower.includes('month')) {
-    const num = parseInt(durationLower) || 1
-    durationDays = num * 30
-  } else if (durationLower.includes('year')) {
-    const num = parseInt(durationLower) || 1
-    durationDays = num * 365
-  }
-
+  // Parse duration text to a time offset
+  // Supports: "15 mins", "2 hours", "7 days", "2 weeks", "3 Months", "1 year", "Lifetime"
   const expiryDate = new Date()
-  expiryDate.setDate(expiryDate.getDate() + durationDays)
+  const durationLower = planConfig.duration.toLowerCase().trim()
+  const num = parseInt(durationLower) || 1
+
+  if (durationLower.includes('min')) {
+    expiryDate.setMinutes(expiryDate.getMinutes() + num)
+  } else if (durationLower.includes('hour')) {
+    expiryDate.setHours(expiryDate.getHours() + num)
+  } else {
+    // For days, weeks, months, years, or lifetime:
+    // Set expiry to exactly 11:59:59 PM IST (which is 18:29:59 UTC) of the final day.
+    // This perfectly aligns with the midnight (12:00 AM IST) cron job.
+    if (durationLower.includes('day')) {
+      expiryDate.setDate(expiryDate.getDate() + num)
+    } else if (durationLower.includes('week')) {
+      expiryDate.setDate(expiryDate.getDate() + num * 7)
+    } else if (durationLower.includes('month')) {
+      expiryDate.setMonth(expiryDate.getMonth() + num)
+    } else if (durationLower.includes('year')) {
+      expiryDate.setFullYear(expiryDate.getFullYear() + num)
+    } else if (durationLower.includes('life')) {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 100)
+    } else {
+      // Fallback: default to 30 days
+      expiryDate.setDate(expiryDate.getDate() + 30)
+    }
+    
+    // Set to 18:29:59.999 UTC (11:59:59 PM IST)
+    expiryDate.setUTCHours(18, 29, 59, 999)
+  }
 
   await prisma.subscription.updateMany({
     where: { userId, status: 'ACTIVE' },
@@ -46,8 +65,8 @@ export async function createSubscription(
   const subscription = await prisma.subscription.create({
     data: {
       userId,
-      planType: planType as PlanType,
-      amount: planConfig.price,
+      planType: planType,
+      amount: paidAmount ?? planConfig.price,
       expiryDate,
       status: 'ACTIVE',
       dailyLimit: planConfig.dailyLimit,

@@ -7,10 +7,8 @@ import { cn } from '@/lib/utils'
 import { SettingsForm } from '@/components/dashboard/SettingsForm'
 import { Area, PlanConfig, PropertyTypeConfig } from '@prisma/client'
 import { toast } from 'sonner'
-
-
-
-type Tab = 'profile' | 'plans' | 'areas' | 'types'
+import { apiFetch } from '@/lib/api-client'
+type Tab = 'profile' | 'plans' | 'areas' | 'types' | 'system'
 
 interface Props {
   phone: string
@@ -44,6 +42,7 @@ export default function AdminSettingsClient({
     { id: 'plans', label: 'Plans' },
     { id: 'areas', label: 'Areas' },
     { id: 'types', label: 'Property Types' },
+    { id: 'system', label: 'System Tasks' },
   ]
 
   return (
@@ -287,6 +286,43 @@ export default function AdminSettingsClient({
               }}
             >
               Add Type
+            </Button>
+          </div>
+        </div>
+      )}
+      {/* ── System Tasks Tab ── */}
+      {tab === 'system' && (
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="font-headline text-lg text-dark mb-2">Cron Jobs & Maintenance</h2>
+          <p className="font-body text-sm text-neutral mb-6">
+            Manually trigger background tasks that normally run automatically on a schedule.
+          </p>
+
+          <div className="flex items-center justify-between border border-cream-dark p-4 rounded-lg bg-cream/20">
+            <div>
+              <p className="font-headline font-semibold text-dark">Daily Cleanup (12:00 AM)</p>
+              <p className="font-body text-sm text-neutral">
+                Expires subscriptions that have passed their end date and downgrades user roles.
+              </p>
+            </div>
+            <Button
+              onClick={async () => {
+                const toastId = toast.loading('Running cleanup...')
+                try {
+                  const res = await apiFetch('/api/admin/cron/trigger', { method: 'POST' })
+                  const data = await res.json()
+                  if (res.ok) {
+                    toast.success(`Cleanup complete. Notified: ${data.notified}`, { id: toastId })
+                  } else {
+                    toast.error(data.error || 'Cleanup failed', { id: toastId })
+                  }
+                } catch {
+                  toast.error('Network error', { id: toastId })
+                }
+              }}
+              className="bg-gold text-dark"
+            >
+              Trigger Now
             </Button>
           </div>
         </div>

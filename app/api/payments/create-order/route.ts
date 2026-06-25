@@ -34,10 +34,22 @@ export async function POST(req: Request) {
     }
 
     const orderId = `BRE-${nanoid(10).toUpperCase()}`
-    const amount =
-      input.type === 'SUBSCRIPTION'
-        ? PLAN_AMOUNTS[input.planType]
-        : PLAN_AMOUNTS.SINGLE
+    let amount: number
+
+    if (input.type === 'SUBSCRIPTION') {
+      const planConfig = await prisma.planConfig.findUnique({
+        where: { planKey: input.planType },
+      })
+      if (!planConfig) {
+        return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      }
+      amount = planConfig.price
+    } else {
+      const singleConfig = await prisma.planConfig.findUnique({
+        where: { planKey: 'SINGLE' },
+      })
+      amount = singleConfig?.price ?? PLAN_AMOUNTS.SINGLE
+    }
 
     if (input.type === 'SINGLE_PROPERTY') {
       const property = await prisma.property.findUnique({

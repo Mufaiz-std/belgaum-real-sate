@@ -22,6 +22,17 @@ export function formatDate(date: Date | string): string {
   }).format(new Date(date))
 }
 
+export function formatDateTime(date: Date | string): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(new Date(date))
+}
+
 export function maskPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '')
   const local = digits.startsWith('91') ? digits.slice(2) : digits

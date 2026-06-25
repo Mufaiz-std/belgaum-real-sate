@@ -12,13 +12,33 @@ export async function PATCH(
     await requireCsrfForMutation(req)
     await requireAdmin()
     const { id } = await params
-    const { days } = z.object({ days: z.number().min(1).max(365) }).parse(await req.json())
+    const body = await req.json()
+
+    // Support both old format (days) and new format (newExpiryDate)
+    const schema = z.union([
+      z.object({ newExpiryDate: z.string() }),
+      z.object({ days: z.number().min(1).max(365) }),
+    ])
+    const parsed = schema.parse(body)
 
     const sub = await prisma.subscription.findUnique({ where: { id } })
     if (!sub) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const expiryDate = new Date(sub.expiryDate)
-    expiryDate.setDate(expiryDate.getDate() + days)
+    let expiryDate: Date
+
+    if ('newExpiryDate' in parsed) {
+      // Set expiry to midnight (00:00:00) of the selected date
+      expiryDate = new Date(parsed.newExpiryDate)
+      expiryDate.setHours(0, 0, 0, 0)
+
+      if (expiryDate <= new Date()) {
+        return NextResponse.json({ error: 'Date must be in the future' }, { status: 400 })
+      }
+    } else {
+      // Legacy: extend by days from current expiry
+      expiryDate = new Date(sub.expiryDate)
+      expiryDate.setDate(expiryDate.getDate() + parsed.days)
+    }
 
     const updated = await prisma.subscription.update({
       where: { id },
@@ -33,3 +53,4 @@ export async function PATCH(
     return handleApiError(err)
   }
 }
+

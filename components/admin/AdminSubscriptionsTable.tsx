@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { formatDate, formatIndianPrice } from '@/lib/format'
+import { formatDate, formatDateTime, formatIndianPrice } from '@/lib/format'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,25 +27,27 @@ export function AdminSubscriptionsTable({
 }) {
   const router = useRouter()
   const [extendId, setExtendId] = useState<string | null>(null)
-  const [extendDays, setExtendDays] = useState('30')
+  const [extendDate, setExtendDate] = useState('')
 
   const handleExtend = async (id: string) => {
-    const days = parseInt(extendDays, 10)
-    if (!days || days < 1) {
-      toast.error('Enter valid days')
+    if (!extendDate) {
+      toast.error('Select a valid date')
       return
     }
     try {
       const res = await apiFetch(`/api/admin/subscriptions/${id}/extend`, {
         method: 'PATCH',
-        body: JSON.stringify({ days }),
+        body: JSON.stringify({ newExpiryDate: extendDate }),
       })
-      if (!res.ok) throw new Error()
-      toast.success(`Extended by ${days} days`)
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || 'Extend failed')
+      }
+      toast.success(`Expiry date updated`)
       setExtendId(null)
       router.refresh()
-    } catch {
-      toast.error('Extend failed')
+    } catch (err: any) {
+      toast.error(err.message || 'Extend failed')
     }
   }
 
@@ -89,7 +91,7 @@ export function AdminSubscriptionsTable({
                 {formatDate(sub.startDate)}
               </td>
               <td className="p-4 font-mono text-sm">
-                {formatDate(sub.expiryDate)}
+                {formatDateTime(sub.expiryDate)}
               </td>
               <td className="p-4">
                 <StatusBadge status={sub.status} />
@@ -99,12 +101,11 @@ export function AdminSubscriptionsTable({
                   {extendId === sub.id ? (
                     <>
                       <Input
-                        type="number"
-                        className="h-8 w-20"
-                        value={extendDays}
-                        onChange={(e) => setExtendDays(e.target.value)}
-                        min={1}
-                        max={365}
+                        type="date"
+                        className="h-8 w-36"
+                        value={extendDate}
+                        onChange={(e) => setExtendDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
                       />
                       <Button size="sm" onClick={() => handleExtend(sub.id)}>
                         Save
@@ -124,7 +125,11 @@ export function AdminSubscriptionsTable({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setExtendId(sub.id)}
+                            onClick={() => {
+                              setExtendId(sub.id)
+                              const d = new Date(sub.expiryDate)
+                              setExtendDate(d.toISOString().split('T')[0])
+                            }}
                           >
                             Extend
                           </Button>

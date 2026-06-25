@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTokenUsageToday } from '@/lib/dashboard'
-import { formatDate, formatIndianPrice } from '@/lib/format'
+import { formatDate, formatDateTime, formatIndianPrice } from '@/lib/format'
 import { DAILY_TOKEN_LIMIT } from '@/lib/constants'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -66,7 +66,7 @@ export default async function SubscriptionPage() {
             {activeSubscription.planType} Subscription
           </h2>
           <p className="mt-2 font-mono text-sm text-neutral">
-            Valid until: {formatDate(activeSubscription.expiryDate)}
+            Valid until: {formatDateTime(activeSubscription.expiryDate)}
           </p>
 
           <div className="mt-6">
@@ -154,7 +154,7 @@ export default async function SubscriptionPage() {
                       {formatDate(sub.startDate)}
                     </td>
                     <td className="p-4 font-mono text-sm text-neutral">
-                      {formatDate(sub.expiryDate)}
+                      {formatDateTime(sub.expiryDate)}
                     </td>
                     <td className="p-4">
                       <StatusBadge status={sub.status} />

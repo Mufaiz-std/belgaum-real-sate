@@ -34,7 +34,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   if (role && role !== 'ALL') where.role = role
   if (status && status !== 'ALL') where.status = status
 
-  const [users, total] = await Promise.all([
+  const [users, total, planConfigs] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -50,6 +50,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
       },
     }),
     prisma.user.count({ where }),
+    prisma.planConfig.findMany({
+      where: { isActive: true, planKey: { not: 'SINGLE' } },
+      orderBy: { price: 'asc' },
+    }),
   ])
 
   return (
@@ -58,6 +62,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
       total={total}
       page={page}
       totalPages={Math.ceil(total / limit)}
+      planConfigs={planConfigs}
     />
   )
 }
+

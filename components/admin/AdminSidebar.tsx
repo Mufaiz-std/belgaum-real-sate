@@ -12,10 +12,12 @@ import {
   Bell,
   Settings,
   LogOut,
-  Home,
   PlusCircle,
   Menu,
   X,
+  ExternalLink,
+  Home,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { maskPhone } from '@/lib/format'
@@ -23,6 +25,7 @@ import { maskPhone } from '@/lib/format'
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/user-stats', label: 'User Stats', icon: BarChart3 },
   { href: '/admin/properties', label: 'Properties', icon: Building2, badge: true },
   { href: '/admin/upload', label: 'Upload Property', icon: PlusCircle },
   { href: '/admin/subscriptions', label: 'Subscriptions', icon: Star },
@@ -48,7 +51,7 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="border-b border-white/10 p-5">
-        <Link href="/admin" className="flex items-center gap-2" onClick={onNavClick}>
+        <Link href="/" className="flex items-center gap-2" onClick={onNavClick}>
           <Home className="size-6 text-gold" />
           <div>
             <div className="font-mono text-xs font-bold text-gold">XCITY REAL ESTATE</div>
@@ -95,7 +98,7 @@ function SidebarContent({
           onClick={onNavClick}
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-cream/70 transition-colors hover:bg-white/5 hover:text-cream"
         >
-          <LogOut className="size-4 shrink-0" />
+          <ExternalLink className="size-4 shrink-0" />
           Back to Site
         </Link>
       </nav>
@@ -142,7 +145,7 @@ export function AdminSidebar({ adminName, adminPhone, pendingCount }: AdminSideb
 
       {/* ── Mobile top bar ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between bg-dark px-4 py-3 border-b border-white/10">
-        <Link href="/admin" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Home className="size-5 text-gold" />
           <div className="font-mono text-xs font-bold text-gold leading-none">
             XCITY<br />

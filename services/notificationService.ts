@@ -177,3 +177,32 @@ export async function createInAppNotification({
     data: { userId, title, body, link },
   })
 }
+
+export async function sendContactFormEmail({
+  name,
+  phone,
+  message,
+}: {
+  name: string
+  phone: string
+  message: string
+}) {
+  const adminEmail = process.env.SMTP_USER
+  if (!adminEmail) return
+
+  const content = `
+    <h1 class="title">New Contact Form Submission</h1>
+    <p class="text"><strong>Name:</strong> ${name}</p>
+    <p class="text"><strong>Phone:</strong> ${phone}</p>
+    <div style="background: #f1f1f1; padding: 16px; border-radius: 8px; margin-top: 16px;">
+      <p class="text" style="white-space: pre-wrap; margin: 0;">${message}</p>
+    </div>
+  `
+
+  await sendEmail(
+    adminEmail,
+    `New Inquiry from ${name} - XcityRealEstate.in`,
+    content
+  )
+}
+

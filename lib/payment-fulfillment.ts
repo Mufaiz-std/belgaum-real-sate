@@ -30,7 +30,7 @@ export async function fulfillOrder(orderId: string, cashfreeTransactionId: strin
   if (payment.paymentType === 'SUBSCRIPTION' && payment.planType) {
     const planType = payment.planType as 'BASIC' | 'PREMIUM' | 'GOLD'
     if (['BASIC', 'PREMIUM', 'GOLD'].includes(planType)) {
-      await createSubscription(payment.userId, planType, payment.id)
+      await createSubscription(payment.userId, planType, payment.id, payment.amount)
     }
   }
 
