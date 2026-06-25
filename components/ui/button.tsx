@@ -1,3 +1,7 @@
+'use client'
+
+import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -40,19 +44,51 @@ const buttonVariants = cva(
   },
 )
 
+export interface ButtonProps
+  extends React.ComponentPropsWithoutRef<typeof ButtonPrimitive>,
+    VariantProps<typeof buttonVariants> {
+  isLoading?: boolean
+}
+
 function Button({
   className,
   variant = 'default',
   size = 'default',
+  isLoading: explicitIsLoading,
+  disabled,
+  onClick,
+  children,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
+  const [isAutoLoading, setIsAutoLoading] = useState(false)
+  const loading = explicitIsLoading || isAutoLoading
+
+  const handleClick = async (e: any) => {
+    if (!onClick) return
+    const result = onClick(e) as any
+    if (result && typeof result === 'object' && 'then' in result) {
+      setIsAutoLoading(true)
+      try {
+        await (result as Promise<any>)
+      } finally {
+        setIsAutoLoading(false)
+      }
+    }
+  }
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled || loading}
+      onClick={handleClick}
       {...props}
-    />
+    >
+      {loading && <Loader2 className="mr-2 size-4 animate-spin shrink-0" />}
+      {children}
+    </ButtonPrimitive>
   )
 }
 
 export { Button, buttonVariants }
+

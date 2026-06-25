@@ -2,8 +2,8 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Playfair_Display, Fira_Sans, Space_Mono } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
+import NextTopLoader from 'nextjs-toploader'
 import './globals.css'
-
 const playfair = Playfair_Display({
   variable: '--font-playfair',
   subsets: ['latin'],
@@ -120,6 +120,17 @@ export default function RootLayout({
       className={`${playfair.variable} ${fira.variable} ${spaceMono.variable} bg-cream`}
     >
       <body className="font-body antialiased text-dark">
+        <NextTopLoader
+          color="#D4A017"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #D4A017,0 0 5px #D4A017"
+        />
         {children}
         <Toaster position="top-center" richColors />
         {process.env.NODE_ENV === 'production' && <Analytics />}
