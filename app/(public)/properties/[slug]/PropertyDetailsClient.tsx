@@ -65,11 +65,12 @@ const furnishedLabels: Record<string, string> = {
 
 
 
-function formatPrice(price: number): string {
+function formatPrice(price: number | null | undefined): string {
+  if (!price || price === 0) return 'NA'
   if (price >= 10000000) {
-    return `₹${(price / 10000000).toFixed(2)} Cr`
+    return `₹${(price / 10000000).toFixed(2).replace(/\.00$/, '')} Cr`
   } else if (price >= 100000) {
-    return `₹${(price / 100000).toFixed(0)},00,000`
+    return `₹${(price / 100000).toFixed(2).replace(/\.00$/, '')} L`
   }
   return `₹${price.toLocaleString('en-IN')}`
 }

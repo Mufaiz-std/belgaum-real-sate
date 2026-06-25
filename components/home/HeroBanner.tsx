@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ShieldCheck, MapPin, Phone, ChevronDown, IndianRupee } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 
 
@@ -76,6 +77,10 @@ export function HeroBanner() {
   const headlineWords = ['Discover', 'Your', 'Extraordinary', 'Home']
   const [propertyTypes, setPropertyTypes] = useState<string[]>(['All Types'])
   const [locations, setLocations] = useState<string[]>(['All Areas'])
+  
+  const [selectedLocation, setSelectedLocation] = useState('')
+  const [selectedType, setSelectedType] = useState('')
+  const router = useRouter()
 
   // Budget dropdown state
   const [budgetOpen, setBudgetOpen] = useState(false)
@@ -83,6 +88,16 @@ export function HeroBanner() {
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const budgetRef = useRef<HTMLDivElement>(null)
+
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (selectedLocation && selectedLocation !== 'All Areas') params.set('search', selectedLocation)
+    if (selectedType && selectedType !== 'All Types') params.set('type', selectedType)
+    if (minPrice) params.set('minPrice', minPrice)
+    if (maxPrice) params.set('maxPrice', maxPrice)
+    
+    router.push(`/properties?${params.toString()}`)
+  }
 
   // Close budget dropdown on outside click
   useEffect(() => {
@@ -220,7 +235,8 @@ export function HeroBanner() {
           <div className="flex flex-col sm:flex-row gap-3">
             <select
               className="flex-1 px-4 py-3 bg-cream-dark/50 rounded-lg font-body text-dark border-0 focus:ring-2 focus:ring-gold focus:outline-none appearance-none cursor-pointer"
-              defaultValue=""
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
             >
               <option value="" disabled>
                 Location/Area
@@ -234,7 +250,8 @@ export function HeroBanner() {
 
             <select
               className="flex-1 px-4 py-3 bg-cream-dark/50 rounded-lg font-body text-dark border-0 focus:ring-2 focus:ring-gold focus:outline-none appearance-none cursor-pointer"
-              defaultValue=""
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
             >
               <option value="" disabled>
                 Property Type
@@ -342,7 +359,10 @@ export function HeroBanner() {
               </AnimatePresence>
             </div>
 
-            <button className="px-6 py-3 bg-gold hover:bg-gold-light text-dark font-body font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors duration-200 shrink-0">
+            <button 
+              onClick={handleSearch}
+              className="px-6 py-3 bg-gold hover:bg-gold-light text-dark font-body font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors duration-200 shrink-0"
+            >
               <Search className="w-5 h-5" />
               <span>Search</span>
             </button>

@@ -22,11 +22,14 @@ const badgeColors = {
   SOLD: 'bg-neutral text-white',
 }
 
-function formatPrice(price: number): string {
+const DEFAULT_COVER = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
+
+function formatPrice(price: number | null | undefined): string {
+  if (!price || price === 0) return 'NA'
   if (price >= 10000000) {
-    return `₹${(price / 10000000).toFixed(2)} Cr`
+    return `₹${(price / 10000000).toFixed(2).replace(/\.00$/, '')} Cr`
   } else if (price >= 100000) {
-    return `₹${(price / 100000).toFixed(2)} L`
+    return `₹${(price / 100000).toFixed(2).replace(/\.00$/, '')} L`
   }
   return `₹${price.toLocaleString('en-IN')}`
 }
@@ -54,20 +57,14 @@ function GridPropertyCard({
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gold"
     >
       {/* Image Container */}
-      <div className="relative h-60 overflow-hidden">
-        {property.coverImage ? (
-          <Image
-            src={property.coverImage}
-            alt={property.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="w-full h-full bg-cream flex items-center justify-center text-neutral font-mono text-sm">
-            No Image
-          </div>
-        )}
+      <div className="relative h-60 overflow-hidden bg-cream">
+        <Image
+          src={property.coverImage || DEFAULT_COVER}
+          alt={property.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
 
         {/* Badge */}
         {property.badge && (
@@ -168,20 +165,14 @@ function ListPropertyCard({
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gold flex flex-col md:flex-row"
     >
       {/* Image Container */}
-      <div className="relative w-full md:w-80 h-56 md:h-auto flex-shrink-0 overflow-hidden">
-        {property.coverImage ? (
-          <Image
-            src={property.coverImage}
-            alt={property.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 320px"
-          />
-        ) : (
-          <div className="w-full h-full bg-cream flex items-center justify-center text-neutral font-mono text-sm">
-            No Image
-          </div>
-        )}
+      <div className="relative w-full md:w-80 h-56 md:h-auto flex-shrink-0 overflow-hidden bg-cream">
+        <Image
+          src={property.coverImage || DEFAULT_COVER}
+          alt={property.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 320px"
+        />
 
         {/* Badge */}
         {property.badge && (

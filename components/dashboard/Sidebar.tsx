@@ -18,7 +18,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { maskPhone } from '@/lib/format'
-import { DAILY_TOKEN_LIMIT } from '@/lib/constants'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -37,9 +36,10 @@ interface SidebarProps {
   role: string
   tokensToday: number
   isSubscriber: boolean
+  dailyLimit: number
 }
 
-export function Sidebar({ phone, role, tokensToday, isSubscriber }: SidebarProps) {
+export function Sidebar({ phone, role, tokensToday, isSubscriber, dailyLimit }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -112,7 +112,7 @@ export function Sidebar({ phone, role, tokensToday, isSubscriber }: SidebarProps
           <div className="mt-3 flex items-center gap-2">
             <span className="size-2 rounded-full bg-success" />
             <span className="font-mono text-xs text-cream/70">
-              {tokensToday} / {DAILY_TOKEN_LIMIT} tokens today
+              {tokensToday} / {dailyLimit} tokens today
             </span>
           </div>
         )}

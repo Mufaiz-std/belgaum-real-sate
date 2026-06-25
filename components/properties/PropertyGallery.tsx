@@ -14,6 +14,8 @@ interface PropertyGalleryProps {
   isUnlocking?: boolean
 }
 
+const DEFAULT_COVER = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
+
 export function PropertyGallery({
   images,
   title,
@@ -24,16 +26,18 @@ export function PropertyGallery({
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
+  const displayImages = images && images.length > 0 ? images : [DEFAULT_COVER]
+
   const isGuest = accessLevel === 'GUEST'
   // Guests & registered users cannot open the full gallery
   const galleryLocked = isGuest || accessLevel === 'REGISTERED'
 
   const goToPrevious = () => {
-    setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+    setActiveIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1))
   }
 
   const goToNext = () => {
-    setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+    setActiveIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1))
   }
 
   // When a locked user clicks a thumbnail or "View All", open the upgrade popup
@@ -54,7 +58,7 @@ export function PropertyGallery({
           onClick={() => !galleryLocked && setLightboxOpen(true)}
         >
           <Image
-            src={images[activeIndex]}
+            src={displayImages[activeIndex]}
             alt={`${title} - Photo ${activeIndex + 1}`}
             fill
             className="object-cover"
@@ -63,7 +67,7 @@ export function PropertyGallery({
           />
 
           {/* "View All" badge — triggers popup for locked, lightbox for unlocked */}
-          {images.length > 1 && (
+          {displayImages.length > 1 && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -79,15 +83,15 @@ export function PropertyGallery({
               {isUnlocking ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : null}
-              {isUnlocking ? 'Unlocking...' : `View All ${images.length} Photos`}
+              {isUnlocking ? 'Unlocking...' : `View All ${displayImages.length} Photos`}
             </button>
           )}
         </div>
 
         {/* Thumbnail Row — always shown; locked thumbnails are blurred and trigger popup */}
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-            {images.map((image, index) => (
+            {displayImages.map((image, index) => (
               <button
                 key={index}
                 onClick={
@@ -169,7 +173,7 @@ export function PropertyGallery({
               {/* Image */}
               <div className="relative w-full max-w-5xl h-[80vh]">
                 <Image
-                  src={images[activeIndex]}
+                  src={displayImages[activeIndex]}
                   alt={`${title} - Image ${activeIndex + 1}`}
                   fill
                   className="object-contain"
@@ -179,7 +183,7 @@ export function PropertyGallery({
 
               {/* Image Counter */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-dark/80 text-white font-mono text-sm rounded-lg">
-                {activeIndex + 1} / {images.length}
+                {activeIndex + 1} / {displayImages.length}
               </div>
             </motion.div>
           </>

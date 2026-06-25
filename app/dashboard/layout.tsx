@@ -17,6 +17,7 @@ export default async function DashboardLayout({
 
   const tokensToday = await getTokenUsageToday(session.userId)
   const isSubscriber = user.subscriptions.length > 0
+  const dailyLimit = user.subscriptions[0]?.dailyLimit || 0
 
   return (
     <div className="flex min-h-screen bg-cream">
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
         role={user.role}
         tokensToday={tokensToday}
         isSubscriber={isSubscriber}
+        dailyLimit={dailyLimit}
       />
       <main className="flex-1 pb-20 md:pb-8">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
