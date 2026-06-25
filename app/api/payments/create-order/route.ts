@@ -86,7 +86,13 @@ export async function POST(req: Request) {
       },
     })
 
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?orderId=${orderId}`
+    const protocol = req.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http')
+    const host = req.headers.get('host') || 'localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== 'http://localhost:3000' 
+      ? process.env.NEXT_PUBLIC_APP_URL 
+      : `${protocol}://${host}`
+
+    const returnUrl = `${baseUrl}/payment/success?orderId=${orderId}`
 
     const cashfreeOrder = await createCashfreeOrder({
       orderId,
