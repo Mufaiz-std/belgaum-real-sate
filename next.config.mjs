@@ -12,19 +12,20 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
     formats: ['image/avif', 'image/webp'],
-    // Prevents Next.js image optimizer from fetching Unsplash server-side
-    // (Unsplash resets connections on automated requests causing 500 errors)
+    // Enable optimization globally (e.g., for Cloudinary).
+    // Note: Unsplash images must be marked unoptimized directly in components
+    // to prevent server-side fetch connection reset (500) errors.
     unoptimized: false,
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ['belgaumrealestate.in', 'localhost:3000', 'choreatic-unsombre-winnifred.ngrok-free.dev'],
+      allowedOrigins: ['xcityrealestate.com', 'www.xcityrealestate.com', 'belgaumrealestate.in', 'localhost:3000', 'choreatic-unsombre-winnifred.ngrok-free.dev'],
     },
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/:path*',
         headers: [
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           {
