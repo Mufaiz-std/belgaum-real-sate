@@ -11,7 +11,6 @@ const navItems = [
   { href: '/dashboard/upload', label: 'Upload', icon: PlusCircle },
   { href: '/dashboard/saved', label: 'Saved', icon: Bookmark },
   { href: '/dashboard/unlocked', label: 'Unlocked', icon: Unlock },
-  { href: '/dashboard/subscription', label: 'Subscription', icon: Star },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
